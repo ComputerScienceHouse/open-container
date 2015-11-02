@@ -58,3 +58,8 @@ target/
 
 *.swp
 *.db
+# PBR
+.eggs/
+AUTHORS
+ChangeLog
+
