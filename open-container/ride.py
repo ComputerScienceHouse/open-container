@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import sqlite3
 from datetime import datetime, date, timedelta, time
@@ -79,11 +80,13 @@ def list_rides(conn, eventId):
     c.execute('select rowid, comments from rideList where eventId is %d' % eventId)
 
     for ride in c:
+        print("ride: ")
         print(ride)
         d = conn.cursor()
         d.execute('select * from passengers where carId is %d' % ride[0])
+        print("passengers: ")
         for passenger in d:
-            print(passenger)
+            print("\t", passenger)
         d.close()
     c.close()
 
@@ -96,14 +99,16 @@ def main():
         db_conn = sqlite3.connect(DB_NAME)
 
     # add party NOW!
-    #add_event(db_conn, datetime.now(), "Test Event")
+    add_event(db_conn, datetime.now(), "Test Event")
 
-    #list_events(db_conn)
+    print("events: ")
+    list_events(db_conn)
 
     add_ride(db_conn, 2, "blash", "liam")
 
     print(event_exists(db_conn, 2))
 
+    print("rides: ")
     list_rides(db_conn, 2)
     pass
 
