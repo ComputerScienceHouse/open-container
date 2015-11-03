@@ -10,7 +10,7 @@ def create_database(file_name):
     c = conn.cursor()
 
     c.execute('''create table eventList
-(departureTime datetime, name text, description text)''')
+(departureTime datetime, name text, description text, disabled integer)''')
     c.execute('''create table rideList
 (eventId integer, comments text)''')
     c.execute('''create table passengers
@@ -36,17 +36,20 @@ def load_database(file_name):
 def add_event(conn, time, name, description="An Event"):
     c = conn.cursor()
 
-    c.execute('''insert into eventList (departureTime, name, description)
-values (?, ?, ?)''', (time, name, description))
+    c.execute('''insert into eventList (departureTime, name, description,
+disabled) values (?, ?, ?, 0)''', (time, name, description))
 
     conn.commit()
 
     c.close()
 
+    return c.lastrowid
+
 def list_events(conn, all_of_time=False):
     c = conn.cursor()
 
-    c.execute('select * from eventList order by departureTime')
+    c.execute('''select * from eventList where disabled is 0
+order by departureTime''')
 
     for row in c:
         t = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S.%f")
@@ -71,6 +74,12 @@ def get_event(conn, id):
 def event_exists(conn, id):
     return not get_event(conn, id) is None
 
+def remove_event(conn, id):
+    c = conn.cursor()
+    c.execute('update eventList set disabled=1 where rowid is %d' % id)
+
+    return None
+
 def add_ride(conn, eventId, comments, driverName):
     if not event_exists(conn, eventId):
         return None
@@ -83,6 +92,8 @@ values (?, ?)''', (eventId, comments))
 values (?, ?)''', (driverName, c.lastrowid))
     conn.commit()
     c.close()
+
+    return c.lastrowid
 
 def list_rides(conn, eventId):
     c = conn.cursor()
