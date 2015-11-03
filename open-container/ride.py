@@ -10,7 +10,7 @@ def create_database(file_name):
     c = conn.cursor()
 
     c.execute('''create table eventList
-(departureTime datetime, name text, description text, disabled integer)''')
+(departureTime datetime, name text, description text)''')
     c.execute('''create table rideList
 (eventId integer, comments text)''')
     c.execute('''create table passengers
@@ -36,8 +36,8 @@ def load_database(file_name):
 def add_event(conn, time, name, description="An Event"):
     c = conn.cursor()
 
-    c.execute('''insert into eventList (departureTime, name, description,
-disabled) values (?, ?, ?, 0)''', (time, name, description))
+    c.execute('''insert into eventList (departureTime, name, description)
+values (?, ?, ?)''', (time, name, description))
 
     conn.commit()
 
@@ -48,8 +48,7 @@ disabled) values (?, ?, ?, 0)''', (time, name, description))
 def list_events(conn, all_of_time=False):
     c = conn.cursor()
 
-    c.execute('''select * from eventList where disabled is 0
-order by departureTime''')
+    c.execute('''select * from eventList order by departureTime''')
 
     for row in c:
         t = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S.%f")
@@ -62,7 +61,7 @@ order by departureTime''')
 
 def get_event(conn, id):
     c = conn.cursor()
-    c.execute('select * from eventList where rowid is %d' % id)
+    c.execute('''select * from eventList where rowid is %d''' % id)
 
     for row in c:
         c.close()
@@ -76,26 +75,35 @@ def event_exists(conn, id):
 
 def remove_event(conn, id):
     c = conn.cursor()
-    c.execute('update eventList set disabled=1 where rowid is %d' % id)
+    c.execute('delete from eventList where rowid is %d' % id)
 
+    conn.commit()
+
+    c.execute('select rowid from rideList where eventId is %d' % id)
+    for ride in c:
+        remove_ride(ride[0])
+
+    c.close()
     return None
 
 def add_ride(conn, eventId, comments, driverName):
     if not event_exists(conn, eventId):
-        return None
+        raise Exception("Event DNE!")
 
     c = conn.cursor()
     c.execute('''insert into rideList (eventId, comments)
 values (?, ?)''', (eventId, comments))
-    print("last row %d" % c.lastrowid)
-    c.execute('''insert into passengers (name, carId)
-values (?, ?)''', (driverName, c.lastrowid))
     conn.commit()
+
+    rideId = c.lastrowid
     c.close()
 
-    return c.lastrowid
+    return (rideId, add_passenger(conn, rideID, driverName))
 
 def list_rides(conn, eventId):
+    if not event_exists(conn, eventId):
+        raise Exception("Event DNE!")
+
     c = conn.cursor()
     c.execute('select rowid, comments from rideList where eventId is %d' % eventId)
 
@@ -110,5 +118,30 @@ def list_rides(conn, eventId):
         d.close()
     c.close()
 
-if __name__ == "__main__":
-    main()
+def remove_ride(conn, carId):
+    c = conn.cursor()
+    c.execute('select rowid from passengers where carId is %d' % carId)
+    for passenger in c:
+        remove_passenger(conn, passengerId)
+    c.execute('delte from rideList where rowid is %d' % carId)
+
+    conn.commit()
+
+    c.close()
+
+def add_passenger(conn, rideId, name):
+    c = conn.cursor()
+    c.execute('''insert into passengers (name, carId) values (?, ?), (name, rideId)
+values (?, ?)''', (name, rideId))
+
+    c.close()
+
+    conn.commit()
+    return c.lastrowid
+
+def remove_passenger(conn, passengerId):
+    c = conn.cursor()
+    c.execute('delete from passengers where rowid is %d' % passengerId)
+    conn.commit()
+
+    c.close()
