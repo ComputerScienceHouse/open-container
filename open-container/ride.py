@@ -3,10 +3,8 @@ import os
 import sqlite3
 from datetime import datetime, date, timedelta, time
 
-DB_NAME = "test.db"
-
-def create_database():
-    conn = sqlite3.connect(DB_NAME)
+def create_database(file_name):
+    conn = sqlite3.connect(file_name)
 
     # tables
     c = conn.cursor()
@@ -23,6 +21,17 @@ def create_database():
     c.close()
 
     return conn
+
+def load_database_from_file(file_name):
+    db_conn = sqlite3.connect(file_name)
+
+    return db_conn
+
+def load_database(file_name):
+    if not os.path.isfile(file_name):
+        return create_database(file_name)
+    else:
+        return load_database_from_file(file_name)
 
 def add_event(conn, time, name, description="An Event"):
     c = conn.cursor()
@@ -89,28 +98,6 @@ def list_rides(conn, eventId):
             print("\t", passenger)
         d.close()
     c.close()
-
-def main():
-    db_conn = None
-
-    if not os.path.isfile(DB_NAME):
-        db_conn = create_database()
-    else:
-        db_conn = sqlite3.connect(DB_NAME)
-
-    # add party NOW!
-    add_event(db_conn, datetime.now(), "Test Event")
-
-    print("events: ")
-    list_events(db_conn)
-
-    add_ride(db_conn, 2, "blash", "liam")
-
-    print(event_exists(db_conn, 2))
-
-    print("rides: ")
-    list_rides(db_conn, 2)
-    pass
 
 if __name__ == "__main__":
     main()
