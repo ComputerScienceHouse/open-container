@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os
 import sqlite3
 from datetime import datetime, date, timedelta, time
@@ -159,7 +158,6 @@ def list_events(conn, all_of_time=False):
         # just check it against the date for now, more precision comes later
         if not all_of_time and t.date() < date.today():
             continue
-        print(row)
         events.append({"id": row[3], "time": row[0], "name": row[1], "description": row[2]})
 
     c.close()
@@ -218,11 +216,8 @@ where eventId is %d''' % eventId)
     ride_list = []
 
     for ride in c:
-        print("ride: ")
-        print(ride)
         d = conn.cursor()
         d.execute('select name, rowid from passengers where carId is %d' % ride[0])
-        print("passengers: ")
 
         passenger_list = []
 
