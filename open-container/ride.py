@@ -12,7 +12,7 @@ def create_database(file_name):
     c.execute('''create table eventList
 (departureTime datetime, name text, description text)''')
     c.execute('''create table rideList
-(eventId integer, comments text)''')
+(eventId integer, capacity integer, comments text)''')
     c.execute('''create table passengers
 (name text, carid integer)''')
 
@@ -86,13 +86,13 @@ def remove_event(conn, id):
     c.close()
     return None
 
-def add_ride(conn, eventId, comments, driverName):
+def add_ride(conn, eventId, comments, capacity, driverName):
     if not event_exists(conn, eventId):
         raise Exception("Event DNE!")
 
     c = conn.cursor()
-    c.execute('''insert into rideList (eventId, comments)
-values (?, ?)''', (eventId, comments))
+    c.execute('''insert into rideList (eventId, capacity, comments)
+values (?, ?, ?)''', (eventId, capacity, comments))
     conn.commit()
 
     rideId = c.lastrowid
@@ -105,7 +105,8 @@ def list_rides(conn, eventId):
         raise Exception("Event DNE!")
 
     c = conn.cursor()
-    c.execute('select rowid, comments from rideList where eventId is %d' % eventId)
+    c.execute('''select rowid, comments, capacity from rideList
+where eventId is %d''' % eventId)
 
     for ride in c:
         print("ride: ")
@@ -129,7 +130,27 @@ def remove_ride(conn, carId):
 
     c.close()
 
+def ride_has_free_space(conn, carId):
+    c = conn.cursor()
+    c.execute('select capacity from rideList where rowid is %d' % carId)
+
+    capacity = 0
+    for results in c:
+        capacity = results[0]
+
+    i = 0
+    c.execute('select * from passengers where carId is %d' % carId)
+    for row in c:
+        i += 1
+
+    c.close()
+
+    return i <= capacity
+
 def add_passenger(conn, rideId, name):
+    if not ride_has_free_space(conn, rideId):
+        raise Exception("Car is full!")
+
     c = conn.cursor()
     c.execute('''insert into passengers (name, carId)
 values (?, ?)''', (name, rideId))

@@ -20,7 +20,7 @@ class TestRides(unittest.TestCase):
 
         wild_party = ride.add_event(conn, event_time, "My Event", "A Test Event")
 
-        ride.add_ride(conn, wild_party, "Party Van", "Loothelion")
+        ride.add_ride(conn, wild_party, "Party Van", 8, "Loothelion")
 
         os.remove(DB_NAME)
         pass
@@ -40,7 +40,7 @@ class TestRides(unittest.TestCase):
 
         wild_party = ride.add_event(conn, event_time, "My Event", "A Test Event")
 
-        ride.add_ride(conn, wild_party, "Party Van", "Loothelion")
+        ride.add_ride(conn, wild_party, "Party Van", 8, "Loothelion")
 
         ride.list_rides(conn, wild_party)
 
@@ -62,7 +62,7 @@ class TestRides(unittest.TestCase):
 
         wild_party = ride.add_event(conn, event_time, "My Event", "A Test Event")
 
-        party_van = ride.add_ride(conn, wild_party, "Party Van", "Loothelion")
+        party_van = ride.add_ride(conn, wild_party, "Party Van", 8, "Loothelion")
 
         ride.list_rides(conn, wild_party)
 
