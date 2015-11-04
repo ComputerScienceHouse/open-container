@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from datetime import datetime, date, timedelta, time
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, make_response, request
 
 app = Flask(__name__)
 
@@ -36,7 +36,12 @@ def http_create_ride():
 
     driver_name = request.form['driverName']
 
-    ride_data = add_ride(db_conn, event_id, comments, capacity, driver_name)
+    try:
+        ride_data = add_ride(db_conn, event_id, comments, capacity, driver_name)
+    except Exception:
+        return make_response(jsonify(
+            {"code": 1, "error": "event does not exist!"}),
+            400)
 
     return jsonify({"rideId": ride_data[0], "driverId": ride_data[1]})
 
@@ -50,7 +55,12 @@ def http_create_passenger():
 
     name = request.form['name']
 
-    passenger_data = add_passenger(db_conn, car_id, name)
+    try:
+        passenger_data = add_passenger(db_conn, car_id, name)
+    except Exception:
+        return make_response(jsonify(
+            {"code": 2, "error": "car is already full!"}),
+            400)
 
     return jsonify({"id": passenger_data})
 
@@ -66,7 +76,12 @@ def http_list_rides():
 
     event_id = int(request.form['id'])
 
-    return jsonify({"rides": list_rides(db_conn, event_id)})
+    try:
+        return jsonify({"rides": list_rides(db_conn, event_id)})
+    except Exception:
+        return make_response(jsonify(
+            {"code": 1, "error": "event does not exist!"}),
+            400)
 
 @app.route('/remove/event', methods=['POST'])
 def http_remove_event():
