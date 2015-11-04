@@ -13,12 +13,30 @@ def http_create_event():
 
     error = None
 
-    event_time = timestr_to_datetime(request.form['time'])
+    try:
+        event_time = timestr_to_datetime(request.form['time'])
+    except Exception:
+        return make_response(jsonify(
+            {
+                "code": 2,
+                "error": "invalid time format!"
+            }),
+            400)
 
     name = request.form['name']
-    description = request.form['description']
+    if name == "":
+        return make_response(jsonify(
+            {
+                "code": 3,
+                "error": "empty string not accepted for name!"
+            }),
+            400)
 
-    event_id = add_event(db_conn, event_time, name, description)
+    description = request.form['description']
+    if description == "":
+        event_id = add_event(db_conn, event_time, name)
+    else:
+        event_id = add_event(db_conn, event_time, name, description)
 
     return jsonify({"id":event_id})
 
@@ -28,11 +46,27 @@ def http_create_ride():
 
     error = None
 
-    event_id = int(request.form['eventId'])
+    try:
+        event_id = int(request.form['eventId'])
+    except Exception:
+        return make_response(jsonify(
+            {
+                "code": 4,
+                "error": "eventId must be an integer value!"
+            }),
+            400)
 
     comments = request.form['comments']
 
-    capacity = int(request.form['capacity'])
+    try:
+        capacity = int(request.form['capacity'])
+    except Exception:
+        return make_response(jsonify(
+            {
+                "code": 4,
+                "error": "capacity must be an integer value greater than 0!"
+            }),
+            400)
 
     driver_name = request.form['driverName']
 
@@ -40,7 +74,10 @@ def http_create_ride():
         ride_data = add_ride(db_conn, event_id, comments, capacity, driver_name)
     except Exception:
         return make_response(jsonify(
-            {"code": 1, "error": "event does not exist!"}),
+            {
+                "code": 1,
+                "error": "event does not exist!"
+            }),
             400)
 
     return jsonify({"rideId": ride_data[0], "driverId": ride_data[1]})
@@ -59,7 +96,10 @@ def http_create_passenger():
         passenger_data = add_passenger(db_conn, car_id, name)
     except Exception:
         return make_response(jsonify(
-            {"code": 2, "error": "car is already full!"}),
+            {
+                "code": 2,
+                "error": "car is already full!"
+            }),
             400)
 
     return jsonify({"id": passenger_data})
@@ -80,14 +120,25 @@ def http_list_rides():
         return jsonify({"rides": list_rides(db_conn, event_id)})
     except Exception:
         return make_response(jsonify(
-            {"code": 1, "error": "event does not exist!"}),
+            {
+                "code": 1,
+                "error": "event does not exist!"
+            }),
             400)
 
 @app.route('/remove/event', methods=['POST'])
 def http_remove_event():
     db_conn = load_database(DB_NAME)
 
-    event_id = int(request.form['id'])
+    try:
+        event_id = int(request.form['eventId'])
+    except Exception:
+        return make_response(jsonify(
+            {
+                "code": 4,
+                "error": "eventId must be an integer value!"
+            }),
+            400)
 
     remove_event(db_conn, event_id)
 
@@ -97,7 +148,15 @@ def http_remove_event():
 def http_remove_ride():
     db_conn = load_database(DB_NAME)
 
-    ride_id = int(request.form['id'])
+    try:
+        ride_id = int(request.form['id'])
+    except Exception:
+        return make_response(jsonify(
+            {
+                "code": 4,
+                "error": "rideId must be an integer value!"
+            }),
+            400)
 
     remove_ride(db_conn, ride_id)
 
@@ -107,7 +166,15 @@ def http_remove_ride():
 def http_remove_passenger():
     db_conn = load_database(DB_NAME)
 
-    passenger_id = int(request.form['id'])
+    try:
+        passenger_id = int(request.form['id'])
+    except Exception:
+        return make_response(jsonify(
+            {
+                "code": 4,
+                "error": "passengerId must be an integer value!"
+            }),
+            400)
 
     remove_passenger(db_conn, passenger_id)
 
