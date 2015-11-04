@@ -98,7 +98,7 @@ values (?, ?)''', (eventId, comments))
     rideId = c.lastrowid
     c.close()
 
-    return (rideId, add_passenger(conn, rideID, driverName))
+    return (rideId, add_passenger(conn, rideId, driverName))
 
 def list_rides(conn, eventId):
     if not event_exists(conn, eventId):
@@ -122,8 +122,8 @@ def remove_ride(conn, carId):
     c = conn.cursor()
     c.execute('select rowid from passengers where carId is %d' % carId)
     for passenger in c:
-        remove_passenger(conn, passengerId)
-    c.execute('delte from rideList where rowid is %d' % carId)
+        remove_passenger(conn, passenger)
+    c.execute('delete from rideList where rowid is %d' % carId)
 
     conn.commit()
 
@@ -131,7 +131,7 @@ def remove_ride(conn, carId):
 
 def add_passenger(conn, rideId, name):
     c = conn.cursor()
-    c.execute('''insert into passengers (name, carId) values (?, ?), (name, rideId)
+    c.execute('''insert into passengers (name, carId)
 values (?, ?)''', (name, rideId))
 
     c.close()
