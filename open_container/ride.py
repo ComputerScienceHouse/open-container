@@ -88,7 +88,15 @@ def http_create_passenger():
 
     error = None
 
-    car_id = int(request.form['carId'])
+    try:
+        car_id = int(request.form['carId'])
+    except Exception:
+        return make_response(jsonify(
+            {
+                "code": 4,
+                "error": "carId must be an integer value greater than 0!"
+            }),
+            400)
 
     name = request.form['name']
 
@@ -114,7 +122,15 @@ def http_list_events():
 def http_list_rides():
     db_conn = load_database(DB_NAME)
 
-    event_id = int(request.form['id'])
+    try:
+        event_id = int(request.form['id'])
+    except Exception:
+        return make_response(jsonify(
+            {
+                "code": 4,
+                "error": "eventId must be an integer value greater than 0!"
+            }),
+            400)
 
     try:
         return jsonify({"rides": list_rides(db_conn, event_id)})
