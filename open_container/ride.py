@@ -23,6 +23,52 @@ def http_create_event():
 
     return jsonify({"id":event_id})
 
+@app.route('/create/ride', methods=['POST'])
+def http_create_ride():
+    db_conn = load_database(DB_NAME)
+
+    error = None
+
+    event_id = int(request.form['eventId'])
+
+    comments = request.form['comments']
+
+    capacity = int(request.form['capacity'])
+
+    driver_name = request.form['driverName']
+
+    ride_data = add_ride(db_conn, event_id, comments, capacity, driver_name)
+
+    return jsonify({"rideId": ride_data[0], "driverId": ride_data[1]})
+
+@app.route('/create/passenger', methods=['POST'])
+def http_create_passenger():
+    db_conn = load_database(DB_NAME)
+
+    error = None
+
+    car_id = int(request.form['carId'])
+
+    name = request.form['name']
+
+    passenger_data = add_passenger(db_conn, car_id, name)
+
+    return jsonify({"id": passenger_data})
+
+@app.route('/list/events', methods=['POST'])
+def http_list_events():
+    db_conn = load_database(DB_NAME)
+
+    return jsonify({"events": list_events(db_conn)})
+
+@app.route('/list/rides', methods=['POST'])
+def http_list_rides():
+    db_conn = load_database(DB_NAME)
+
+    event_id = int(request.form['id'])
+
+    return jsonify({"rides": list_rides(db_conn, event_id)})
+
 def timestr_to_datetime(timestr):
     return datetime.strptime(timestr, "%Y-%m-%d %H:%M:%S.%f")
 
@@ -74,7 +120,9 @@ values (?, ?, ?)''', (time, name, description))
 def list_events(conn, all_of_time=False):
     c = conn.cursor()
 
-    c.execute('''select * from eventList order by departureTime''')
+    c.execute('''select departureTime, name, description, rowid from eventList order by departureTime''')
+
+    events = []
 
     for row in c:
         t = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S.%f")
@@ -82,8 +130,11 @@ def list_events(conn, all_of_time=False):
         if not all_of_time and t.date() < date.today():
             continue
         print(row)
+        events.append({"id": row[3], "time": row[0], "name": row[1], "description": row[2]})
 
     c.close()
+
+    return events
 
 def get_event(conn, id):
     c = conn.cursor()
@@ -134,16 +185,29 @@ def list_rides(conn, eventId):
     c.execute('''select rowid, comments, capacity from rideList
 where eventId is %d''' % eventId)
 
+    ride_list = []
+
     for ride in c:
         print("ride: ")
         print(ride)
         d = conn.cursor()
-        d.execute('select * from passengers where carId is %d' % ride[0])
+        d.execute('select name, rowid from passengers where carId is %d' % ride[0])
         print("passengers: ")
+
+        passenger_list = []
+
         for passenger in d:
-            print("\t", passenger)
+            passenger_list.append({"id": passenger[1], "name": passenger[0]})
         d.close()
+
+        ride_list.append({  "id": ride[0],
+                            "comments": ride[1],
+                            "capacity": ride[2],
+                            "passengers": passenger_list
+                            })
     c.close()
+
+    return ride_list
 
 def remove_ride(conn, carId):
     c = conn.cursor()
