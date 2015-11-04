@@ -2,13 +2,13 @@ import importlib
 import os
 import unittest
 
+import open_container.ride as ride
+
 from datetime import datetime, date, time, timedelta
 
 class TestRides(unittest.TestCase):
     def test_create_ride(self):
         DB_NAME = "create_event.test"
-
-        ride = importlib.import_module("open-container.ride")
 
         conn = ride.load_database(DB_NAME)
 
@@ -27,8 +27,6 @@ class TestRides(unittest.TestCase):
 
     def test_list_rides(self):
         DB_NAME = "create_event.test"
-
-        ride = importlib.import_module("open-container.ride")
 
         conn = ride.load_database(DB_NAME)
 
@@ -49,8 +47,6 @@ class TestRides(unittest.TestCase):
 
     def test_remove_ride(self):
         DB_NAME = "create_event.test"
-
-        ride = importlib.import_module("open-container.ride")
 
         conn = ride.load_database(DB_NAME)
 

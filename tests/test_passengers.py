@@ -2,13 +2,13 @@ import importlib
 import os
 import unittest
 
+import open_container.ride as ride
+
 from datetime import datetime, date, time, timedelta
 
 class TestPassengers(unittest.TestCase):
     def test_add_passenger(self):
         DB_NAME = "create_event.test"
-
-        ride = importlib.import_module("open-container.ride")
 
         conn = ride.load_database(DB_NAME)
 
@@ -33,8 +33,6 @@ class TestPassengers(unittest.TestCase):
 
     def test_list_passengers(self):
         DB_NAME = "create_event.test"
-
-        ride = importlib.import_module("open-container.ride")
 
         conn = ride.load_database(DB_NAME)
 
@@ -61,8 +59,6 @@ class TestPassengers(unittest.TestCase):
 
     def test_remove_passenger(self):
         DB_NAME = "create_event.test"
-
-        ride = importlib.import_module("open-container.ride")
 
         conn = ride.load_database(DB_NAME)
 
@@ -93,8 +89,6 @@ class TestPassengers(unittest.TestCase):
 
     def test_too_many_passengers(self):
         DB_NAME = "create_event.test"
-
-        ride = importlib.import_module("open-container.ride")
 
         conn = ride.load_database(DB_NAME)
 

@@ -2,6 +2,32 @@ from __future__ import print_function
 import os
 import sqlite3
 from datetime import datetime, date, timedelta, time
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+DB_NAME = "test.db"
+
+@app.route('/create/event', methods=['POST'])
+def http_create_event():
+    db_conn = load_database(DB_NAME)
+
+    error = None
+
+    event_time = timestr_to_datetime(request.form['time'])
+
+    name = request.form['name']
+    description = request.form['description']
+
+    event_id = add_event(db_conn, event_time, name, description)
+
+    return jsonify({"id":event_id})
+
+def timestr_to_datetime(timestr):
+    return datetime.strptime(timestr, "%Y-%m-%d %H:%M:%S.%f")
+
+def datetime_to_timestr(date_time):
+    return date_time.strftime("%Y-%m-%d %H:%M:%S.%f")
 
 def create_database(file_name):
     conn = sqlite3.connect(file_name)
@@ -145,7 +171,7 @@ def ride_has_free_space(conn, carId):
 
     c.close()
 
-    return i <= capacity
+    return i < capacity
 
 def add_passenger(conn, rideId, name):
     if not ride_has_free_space(conn, rideId):
@@ -166,3 +192,9 @@ def remove_passenger(conn, passengerId):
     conn.commit()
 
     c.close()
+
+def main():
+    app.run(debug=True)
+
+if __name__ == "__main__":
+    main()
