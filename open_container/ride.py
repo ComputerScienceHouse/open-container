@@ -69,6 +69,36 @@ def http_list_rides():
 
     return jsonify({"rides": list_rides(db_conn, event_id)})
 
+@app.route('/remove/event', methods=['POST'])
+def http_remove_event():
+    db_conn = load_database(DB_NAME)
+
+    event_id = int(request.form['id'])
+
+    remove_event(db_conn, event_id)
+
+    return ""
+
+@app.route('/remove/ride', methods=['POST'])
+def http_remove_ride():
+    db_conn = load_database(DB_NAME)
+
+    ride_id = int(request.form['id'])
+
+    remove_ride(db_conn, ride_id)
+
+    return ""
+
+@app.route('/remove/passenger', methods=['POST'])
+def http_remove_passenger():
+    db_conn = load_database(DB_NAME)
+
+    passenger_id = int(request.form['id'])
+
+    remove_passenger(db_conn, passenger_id)
+
+    return ""
+
 def timestr_to_datetime(timestr):
     return datetime.strptime(timestr, "%Y-%m-%d %H:%M:%S.%f")
 
