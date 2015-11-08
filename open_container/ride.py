@@ -1,14 +1,27 @@
 import os
 import sqlite3
 from datetime import datetime, date, timedelta, time
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, jsonify, make_response, render_template, request
 
 app = Flask(__name__)
 
 DB_NAME = "test.db"
 
+@app.route('/list')
+def http_list_event():
+    db_conn = load_database(DB_NAME)
+
+    event_list = list_events(db_conn)
+
+    for event in event_list:
+        event['rides'] = list_rides(db_conn, event['id'])
+
+    print(event_list)
+    return render_template('index.html',
+            events = event_list)
+
 @app.route('/create/event', methods=['POST'])
-def http_create_event():
+def api_create_event():
     db_conn = load_database(DB_NAME)
 
     error = None
@@ -41,7 +54,7 @@ def http_create_event():
     return jsonify({"id":event_id})
 
 @app.route('/create/ride', methods=['POST'])
-def http_create_ride():
+def api_create_ride():
     db_conn = load_database(DB_NAME)
 
     error = None
@@ -83,7 +96,7 @@ def http_create_ride():
     return jsonify({"rideId": ride_data[0], "driverId": ride_data[1]})
 
 @app.route('/create/passenger', methods=['POST'])
-def http_create_passenger():
+def api_create_passenger():
     db_conn = load_database(DB_NAME)
 
     error = None
@@ -113,13 +126,13 @@ def http_create_passenger():
     return jsonify({"id": passenger_data})
 
 @app.route('/list/events', methods=['POST'])
-def http_list_events():
+def api_list_events():
     db_conn = load_database(DB_NAME)
 
     return jsonify({"events": list_events(db_conn)})
 
 @app.route('/list/rides', methods=['POST'])
-def http_list_rides():
+def api_list_rides():
     db_conn = load_database(DB_NAME)
 
     try:
@@ -143,7 +156,7 @@ def http_list_rides():
             400)
 
 @app.route('/remove/event', methods=['POST'])
-def http_remove_event():
+def api_remove_event():
     db_conn = load_database(DB_NAME)
 
     try:
@@ -161,7 +174,7 @@ def http_remove_event():
     return ""
 
 @app.route('/remove/ride', methods=['POST'])
-def http_remove_ride():
+def api_remove_ride():
     db_conn = load_database(DB_NAME)
 
     try:
@@ -179,7 +192,7 @@ def http_remove_ride():
     return ""
 
 @app.route('/remove/passenger', methods=['POST'])
-def http_remove_passenger():
+def api_remove_passenger():
     db_conn = load_database(DB_NAME)
 
     try:
@@ -254,9 +267,10 @@ def list_events(conn, all_of_time=False):
     for row in c:
         t = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S.%f")
         # just check it against the date for now, more precision comes later
-        if not all_of_time and t.date() < date.today():
-            continue
+        #if not all_of_time and t.date() < date.today():
+        #    continue
         events.append({"id": row[3], "time": row[0], "name": row[1], "description": row[2]})
+        print(row)
 
     c.close()
 
