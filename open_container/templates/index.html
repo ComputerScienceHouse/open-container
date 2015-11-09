@@ -11,7 +11,7 @@
     <title>Event List</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="http://netdna.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://netdna.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap theme -->
     <!-- <link href="//getbootstrap.com/dist/css/bootstrap-theme.min.css" rel="stylesheet"> -->
     <!-- Members theme -->
@@ -46,7 +46,7 @@
     <script type="text/javascript">
         function joinRide(id, name_id) {
             $.ajax({
-                url: "http://localhost:5000/create/passenger",
+                url: "https://localhost:5000/create/passenger",
                 method: "POST",
                 data: { carId: id, name: $('#name-ride-' + name_id).val() }
             });
@@ -54,7 +54,7 @@
         }
         function deleteRide(id) {
             $.ajax({
-                url: "http://localhost:5000/remove/ride",
+                url: "https://localhost:5000/remove/ride",
                 method: "POST",
                 data: { id: id }
             });
@@ -62,7 +62,7 @@
         }
         function createRide(id) {
             $.ajax({
-                url: "http://localhost:5000/create/ride",
+                url: "https://localhost:5000/create/ride",
                 method: "POST",
                 data: {
                     eventId: id,
@@ -235,7 +235,7 @@ class="btn btn-lg btn-success">Create Ride</button>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
-    <script src="http://netdna.bootstrapcdn.com/bootstrap/latest/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/latest/js/bootstrap.min.js"></script>
     <!--<script src="./Theme Template for Bootstrap_files/docs.min.js"></script>-->
 </body></html>

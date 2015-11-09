@@ -17,8 +17,11 @@ def http_list_event():
         event['rides'] = list_rides(db_conn, event['id'])
 
     print(event_list)
+
+    user_name = request.headers.get('X-WEBAUTH-USER')
     return render_template('index.html',
-            events = event_list)
+            events = event_list,
+            user = user_name)
 
 @app.route('/create/event', methods=['POST'])
 def api_create_event():
@@ -395,7 +398,7 @@ def remove_passenger(conn, passengerId):
     c.close()
 
 def main():
-    app.run(debug=True, port=64957)
+    app.run(debug=True, host='0.0.0.0', port=64957)
 
 if __name__ == "__main__":
     main()
