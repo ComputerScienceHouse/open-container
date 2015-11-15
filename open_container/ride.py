@@ -398,7 +398,7 @@ def remove_passenger(conn, passengerId):
     c.close()
 
 def main():
-    app.run(debug=True, host='0.0.0.0', port=64957)
+    app.run(debug=True, port=64957)
 
 if __name__ == "__main__":
     main()
