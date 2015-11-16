@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="">
+
+    <title>Event List</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://netdna.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Members theme -->
+    <link href="/css/members.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" media="screen" href="/css/bootstrap-datetimepicker.min.css">
+
+    <style>
+      body {
+        padding-top: 75px;
+        padding-bottom: 30px;
+      }
+
+      .theme-dropdown .dropdown-menu {
+        position: static;
+        display: block;
+        margin-bottom: 20px;
+      }
+
+      .theme-showcase > p > .btn {
+        margin: 5px 0;
+      }
+
+      .theme-showcase .navbar .container {
+        width: auto;
+      }
+    </style>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script type="text/javascript">
+        function joinRide(id, name_id) {
+            $.ajax({
+                url: "https://localhost:5000/create/passenger",
+                method: "POST",
+                data: { carId: id, name: $('#name-ride-' + name_id).val() }
+            });
+            location.reload();
+        }
+        function deleteRide(id) {
+            $.ajax({
+                url: "https://localhost:5000/remove/ride",
+                method: "POST",
+                data: { id: id }
+            });
+            location.reload();
+        }
+        function createRide(id) {
+            $.ajax({
+                url: "https://localhost:5000/create/ride",
+                method: "POST",
+                data: {
+                    eventId: id,
+                    comments: $('#comments-event-' + id).val(),
+                    driverName: $('#name-event-' + id).val(),
+                    capacity: $('#capacity-event-' + id).val()
+                }
+            });
+            location.reload();
+        }
+    </script>
+  </head>
+
+  <body role="document">
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Bootstrap theme</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Dropdown <span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="#">Separated link</a></li>
+                <li><a href="#">One more separated link</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container theme-showcase" role="main">
+
+      <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <h1>Create Event</h1>
+      </div>
+
+
+      <div class="page-header">
+        <h1>Buttons</h1>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          Event Name: <input type="text" class="form-control" id='name'>
+        </div>
+        <div class="col-md-6">
+          <input type="text" id="datetimepicker"/>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="description">Event Description:</label>
+            <textarea class="form-control" rows="5" id="description"></textarea>
+          </div>
+        </div>
+      </div>
+      <p>
+        <button type="button" onclick="as();" class="btn btn-lg btn-success">Success</button>
+      </p>
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/latest/js/bootstrap.min.js"></script>
+    <!--<script src="./Theme Template for Bootstrap_files/docs.min.js"></script>-->
+    <script type="text/javascript"
+     src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js">
+    </script> 
+    <script type="text/javascript"
+     src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js">
+    </script>
+<link rel="stylesheet" type="text/css" href="/css/jquery.datetimepicker.css"/ >
+<script src="/js/jquery.datetimepicker.full.min.js"></script>
+    <script type="text/javascript">
+time = ""
+function zeroPad(num, places) {
+  var zero = places - num.toString().length + 1;
+  return Array(+(zero > 0 && zero)).join("0") + num;
+}
+
+times = []
+for(var i = 0; i < 24; ++i) {
+    for(var j = 0; j < 60; j += 5) {
+        times.push(zeroPad(i, 2) + ":" + zeroPad(j, 2));
+    }
+}
+$('#datetimepicker').datetimepicker({
+inline:true,
+format: 'Y-m-d H:M',
+allowTimes: times,
+onChangeDateTime: function(a, b) { time = a},
+onGenerate: function(a, b) { time = a}
+});
+
+function as() {
+    out = time.getFullYear() + "-" + time.getMonth() + "-" + time.getDate()
+        + " " + time.getHours() + ":" + time.getMinutes() + ":00";
+
+    $
+    console.log(out);
+            $.ajax({
+                url: "/api/v1/create/event",
+                type: 'POST',
+                data: {
+                    time: out,
+                    name: $('#name').val(),
+                    description: $('#description').val(),
+                },
+                error: function(msg) {
+                    console.log(msg);
+                }
+            });
+}
+</script>
+</body></html>

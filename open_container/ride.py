@@ -1,29 +1,38 @@
 import os
 import sqlite3
 from datetime import datetime, date, timedelta, time
-from flask import Flask, jsonify, make_response, render_template, request
+from flask import Flask, jsonify, make_response, render_template, request, send_from_directory
 
 app = Flask(__name__)
 
 DB_NAME = "test.db"
 
-@app.route('/list')
+@app.route('/js/<path:path>')
+def serve_js(path):
+    return send_from_directory(app.root_path + '/js',  path)
+
+@app.route('/css/<path:path>')
+def serve_css(path):
+    return send_from_directory(app.root_path + '/css',  path)
+
+@app.route('/list/event')
 def http_list_event():
     db_conn = load_database(DB_NAME)
 
     event_list = list_events(db_conn)
 
-    for event in event_list:
-        event['rides'] = list_rides(db_conn, event['id'])
-
-    print(event_list)
-
     user_name = request.headers.get('X-WEBAUTH-USER')
-    return render_template('index.html',
+    return render_template('list_event.html',
             events = event_list,
             user = user_name)
 
-@app.route('/create/event', methods=['POST'])
+@app.route('/create/event')
+def http_create_event():
+    user_name = request.headers.get('X-WEBAUTH-USER')
+    return render_template('create_event.html',
+            user = user_name)
+
+@app.route('/api/v1/create/event', methods=['POST'])
 def api_create_event():
     db_conn = load_database(DB_NAME)
 
@@ -56,7 +65,7 @@ def api_create_event():
 
     return jsonify({"id":event_id})
 
-@app.route('/create/ride', methods=['POST'])
+@app.route('/api/v1/create/ride', methods=['POST'])
 def api_create_ride():
     db_conn = load_database(DB_NAME)
 
@@ -98,7 +107,7 @@ def api_create_ride():
 
     return jsonify({"rideId": ride_data[0], "driverId": ride_data[1]})
 
-@app.route('/create/passenger', methods=['POST'])
+@app.route('/api/v1/create/passenger', methods=['POST'])
 def api_create_passenger():
     db_conn = load_database(DB_NAME)
 
@@ -128,13 +137,13 @@ def api_create_passenger():
 
     return jsonify({"id": passenger_data})
 
-@app.route('/list/events', methods=['POST'])
+@app.route('/api/v1/list/events', methods=['POST'])
 def api_list_events():
     db_conn = load_database(DB_NAME)
 
     return jsonify({"events": list_events(db_conn)})
 
-@app.route('/list/rides', methods=['POST'])
+@app.route('/api/v1/list/rides', methods=['POST'])
 def api_list_rides():
     db_conn = load_database(DB_NAME)
 
@@ -158,7 +167,7 @@ def api_list_rides():
             }),
             400)
 
-@app.route('/remove/event', methods=['POST'])
+@app.route('/api/v1/remove/event', methods=['POST'])
 def api_remove_event():
     db_conn = load_database(DB_NAME)
 
@@ -176,7 +185,7 @@ def api_remove_event():
 
     return ""
 
-@app.route('/remove/ride', methods=['POST'])
+@app.route('/api/v1/remove/ride', methods=['POST'])
 def api_remove_ride():
     db_conn = load_database(DB_NAME)
 
@@ -194,7 +203,7 @@ def api_remove_ride():
 
     return ""
 
-@app.route('/remove/passenger', methods=['POST'])
+@app.route('/api/v1/remove/passenger', methods=['POST'])
 def api_remove_passenger():
     db_conn = load_database(DB_NAME)
 
@@ -213,10 +222,10 @@ def api_remove_passenger():
     return ""
 
 def timestr_to_datetime(timestr):
-    return datetime.strptime(timestr, "%Y-%m-%d %H:%M:%S.%f")
+    return datetime.strptime(timestr, "%Y-%m-%d %H:%M:%S")
 
 def datetime_to_timestr(date_time):
-    return date_time.strftime("%Y-%m-%d %H:%M:%S.%f")
+    return date_time.strftime("%Y-%m-%d %H:%M:%S")
 
 def create_database(file_name):
     conn = sqlite3.connect(file_name)
@@ -268,7 +277,7 @@ def list_events(conn, all_of_time=False):
     events = []
 
     for row in c:
-        t = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S.%f")
+        t = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
         # just check it against the date for now, more precision comes later
         #if not all_of_time and t.date() < date.today():
         #    continue
