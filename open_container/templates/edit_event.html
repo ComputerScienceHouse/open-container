@@ -41,7 +41,7 @@
                 <td>{{ride['comments']}}</td>
                 {% if ride['driver'] == user %}
                     <td><button type="button" onclick="deleteRide({{ride['id']}}, {{event}})", class="btn btn-xs btn-danger">Delete Ride</button>
-                {% elif inRides|length > 0 and ride['id'] not in inRides%}
+                {% elif driverId != 0 or inRides|length > 0 and ride['id'] not in inRides%}
                     <td><span class="label label-danger">Can Only Join One Ride At Once</span>
                 {% else %}
                     {% if ride['passengers']|length >= ride['capacity'] %}
