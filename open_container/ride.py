@@ -2,11 +2,12 @@ import os
 import sqlite3
 from datetime import datetime, date, timedelta, time
 from flask import Flask, jsonify, make_response, render_template, request, send_from_directory
+import sys
 
 app = Flask(__name__)
+app.jinja_env.add_extension('jinja2.ext.do')
 
 DB_NAME = "test.db"
-
 @app.route('/js/<path:path>')
 def serve_js(path):
     return send_from_directory(app.root_path + '/js',  path)
@@ -32,14 +33,47 @@ def http_create_event():
     return render_template('create_event.html',
             user = user_name)
 
+@app.route('/edit/event/<id>')
+def http_edit_event(id):
+    db_conn = load_database(DB_NAME)
+    user_name = request.headers.get('X-WEBAUTH-USER')
+
+    rides = list_rides(db_conn, int(id))
+
+    host = get_event(db_conn, int(id))[2]
+
+    event_name = get_event(db_conn, int(id))[3]
+
+    list_attendees(db_conn, int(id))
+
+    return render_template('edit_event.html',
+            user = user_name,
+            event = id,
+            host = host,
+            event_name = event_name,
+            rides = rides)
+
+@app.route('/')
+def http_base():
+    return http_list_event()
+
+@app.route('/create/ride/<id>')
+def http_create_ride(id):
+    db_conn = load_database(DB_NAME)
+    user_name = request.headers.get('X-WEBAUTH-USER')
+
+    return render_template('create_ride.html',
+            user = user_name,
+            event = id)
+
 @app.route('/api/v1/create/event', methods=['POST'])
 def api_create_event():
     db_conn = load_database(DB_NAME)
-
-    error = None
+ 
 
     try:
-        event_time = timestr_to_datetime(request.form['time'])
+        event_startTime = timestr_to_datetime(request.form['startTime'])
+        event_endTime = timestr_to_datetime(request.form['endTime'])
     except Exception:
         return make_response(jsonify(
             {
@@ -57,11 +91,18 @@ def api_create_event():
             }),
             400)
 
+    user = request.form['driver']
+    if user == "":
+        return make_response(jsonify(
+            {
+                "code": 3,
+                "error": "empty string not accepted for name!"
+            }),
+            400)
+
     description = request.form['description']
-    if description == "":
-        event_id = add_event(db_conn, event_time, name)
-    else:
-        event_id = add_event(db_conn, event_time, name, description)
+    event_id = add_event(db_conn, event_startTime, event_endTime, name,
+description, user)
 
     return jsonify({"id":event_id})
 
@@ -70,6 +111,17 @@ def api_create_ride():
     db_conn = load_database(DB_NAME)
 
     error = None
+
+    try:
+        ride_startTime = timestr_to_datetime(request.form['departureTime'])
+        ride_endTime = timestr_to_datetime(request.form['returnTime'])
+    except Exception:
+        return make_response(jsonify(
+            {
+                "code": 2,
+                "error": "invalid time format!"
+            }),
+            400)
 
     try:
         event_id = int(request.form['eventId'])
@@ -96,7 +148,8 @@ def api_create_ride():
     driver_name = request.form['driverName']
 
     try:
-        ride_data = add_ride(db_conn, event_id, comments, capacity, driver_name)
+        ride_data = add_ride(db_conn, event_id, comments, capacity, driver_name,
+ride_startTime, ride_endTime)
     except Exception:
         return make_response(jsonify(
             {
@@ -105,7 +158,7 @@ def api_create_ride():
             }),
             400)
 
-    return jsonify({"rideId": ride_data[0], "driverId": ride_data[1]})
+    return jsonify({"rideId": ride_data})
 
 @app.route('/api/v1/create/passenger', methods=['POST'])
 def api_create_passenger():
@@ -234,9 +287,9 @@ def create_database(file_name):
     c = conn.cursor()
 
     c.execute('''create table eventList
-(departureTime datetime, name text, description text)''')
+(startTime datetime, endTime datetime, host text, name text, description text)''')
     c.execute('''create table rideList
-(eventId integer, capacity integer, comments text)''')
+(eventId integer, capacity integer, comments text, driver text, departureTime datetime, returnTime datetime)''')
     c.execute('''create table passengers
 (name text, carid integer)''')
 
@@ -257,31 +310,35 @@ def load_database(file_name):
     else:
         return load_database_from_file(file_name)
 
-def add_event(conn, time, name, description="An Event"):
+def add_event(conn, startTime, endTime, name, description, host):
     c = conn.cursor()
 
-    c.execute('''insert into eventList (departureTime, name, description)
-values (?, ?, ?)''', (time, name, description))
+    c.execute('''insert into eventList (startTime, endTime, host, name, description)
+values (?, ?, ?, ?, ?)''', (startTime, endTime, host, name, description))
 
     conn.commit()
 
     c.close()
+
+    add_ride(conn, c.lastrowid, "", sys.maxint, "Need Ride", startTime, endTime)
 
     return c.lastrowid
 
 def list_events(conn, all_of_time=False):
     c = conn.cursor()
 
-    c.execute('''select departureTime, name, description, rowid from eventList order by departureTime''')
+    c.execute('''select startTime, endTime, host, name, description, rowid from
+eventList order by endTime''')
 
     events = []
 
     for row in c:
         t = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
         # just check it against the date for now, more precision comes later
-        #if not all_of_time and t.date() < date.today():
-        #    continue
-        events.append({"id": row[3], "time": row[0], "name": row[1], "description": row[2]})
+        if not all_of_time and t.date() < date.today():
+            continue
+        events.append({"id": row[5], "startTime": row[0], "name": row[3],
+"description": row[4], "endTime": row[1], "host": row[2]})
         print(row)
 
     c.close()
@@ -310,32 +367,33 @@ def remove_event(conn, id):
 
     c.execute('select rowid from rideList where eventId is %d' % id)
     for ride in c:
-        remove_ride(ride[0])
+        remove_ride(conn, ride[0])
 
     c.close()
     return None
 
-def add_ride(conn, eventId, comments, capacity, driverName):
+def add_ride(conn, eventId, comments, capacity, driverName, startTime, endTime):
     if not event_exists(conn, eventId):
         raise Exception("Event DNE!")
 
     c = conn.cursor()
-    c.execute('''insert into rideList (eventId, capacity, comments)
-values (?, ?, ?)''', (eventId, capacity, comments))
+    c.execute('''insert into rideList (eventId, capacity, comments, driver,
+departureTime, returnTIme)
+values (?, ?, ?, ?, ?, ?)''', (eventId, capacity, comments, driverName,
+startTime, endTime))
+
     conn.commit()
 
-    rideId = c.lastrowid
     c.close()
 
-    return (rideId, add_passenger(conn, rideId, driverName))
+    return c.lastrowid
 
 def list_rides(conn, eventId):
     if not event_exists(conn, eventId):
         raise Exception("Event DNE!")
 
     c = conn.cursor()
-    c.execute('''select rowid, comments, capacity from rideList
-where eventId is %d''' % eventId)
+    c.execute('''select rowid, comments, capacity, departureTime, returnTime, driver from rideList where eventId is %d''' % eventId)
 
     ride_list = []
 
@@ -352,11 +410,29 @@ where eventId is %d''' % eventId)
         ride_list.append({  "id": ride[0],
                             "comments": ride[1],
                             "capacity": ride[2],
-                            "passengers": passenger_list
+                            "passengers": passenger_list,
+                            "departureTime": ride[3],
+                            "returnTime": ride[4],
+                            "driver": ride[5]
                             })
     c.close()
 
     return ride_list
+
+def list_attendees(conn, eventId):
+    rides = list_rides(conn, eventId)
+
+    passenger_names = []
+
+    for ride in rides:
+        passenger_names.append(ride['driver'])
+        for passenger in ride['passengers']:
+            passenger_names.append(passenger['name'])
+
+    passenger_names.remove("Need Ride")
+    print(passenger_names)
+
+    return jsonify({ "attendees": passenger_names})
 
 def remove_ride(conn, carId):
     c = conn.cursor()
@@ -386,6 +462,18 @@ def ride_has_free_space(conn, carId):
 
     return i < capacity
 
+def ride_is_empty(conn, carId): 
+    i = 0
+    c = conn.cursor()
+    c.execute('select * from passengers where carId is %d' % carId)
+    for row in c:
+        i += 1
+
+    c.close()
+
+    print("passenger cont: ", i)
+    return i == 0
+
 def add_passenger(conn, rideId, name):
     if not ride_has_free_space(conn, rideId):
         raise Exception("Car is full!")
@@ -400,9 +488,20 @@ values (?, ?)''', (name, rideId))
     return c.lastrowid
 
 def remove_passenger(conn, passengerId):
+    rideId = 0
     c = conn.cursor()
+    c.execute('select carId from passengers where rowid is %d' %passengerId)
+
+    for car in c:
+        rideId = car[0]
+
+    print("rideId: ", rideId)
+
     c.execute('delete from passengers where rowid is %d' % passengerId)
     conn.commit()
+
+    #if ride_is_empty(conn, rideId):
+    #    remove_ride(conn, rideId)
 
     c.close()
 

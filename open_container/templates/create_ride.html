@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
-{% block title %}Create Event{% endblock %}
+{% block title %}Create Ride{% endblock %}
 {% block titlebar %}
-<h1>Create Event</h1>
+<h1>Create Ride</h1>
 {% endblock %}
 {% block body %}
       <div class="jumbotron">
       <div class="row">
         <div class="col-md-8">
-            <label for="name">Event Name:</label>
-            <input type="text" class="form-control" id='name'>
+            <label for="capacity">Number of Seats in Car (not including driver):</label>
+            <input type="number" class="form-control"
+id='capacity' min="2" max="42" value="5">
         </div>
         <div class="col-md-4">
           <label for="startTime">Start Time:</label>
@@ -17,8 +18,8 @@
       </div>
       <div class="row">
         <div class="col-md-8">
-            <label for="description">Event Description:</label>
-            <textarea class="form-control" rows="5" id="description"></textarea>
+            <label for="comments">Comments:</label>
+            <textarea class="form-control" rows="5" id="comments"></textarea>
         </div>
         <div class="col-md-4">
           <label for="endTime">End Time:</label>
@@ -26,9 +27,9 @@
         </div>
       </div>
       <p>
-        <button type="button" onclick="submit_createEvent('{{user}}');" class="btn btn-lg btn-success">Success</button>
+        <button type="button" onclick="submit_createRide({{event}}, '{{user}}');" class="btn btn-lg
+btn-success">Create Ride</button>
       </p>
-      </div>
 {% endblock %}
 {% block endscripts %}
       <script>
