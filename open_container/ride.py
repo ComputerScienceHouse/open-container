@@ -2,6 +2,7 @@ import os
 import sqlite3
 from datetime import datetime, date, timedelta, time
 from flask import Flask, jsonify, make_response, render_template, request, send_from_directory
+from random import shuffle
 import sys
 
 app = Flask(__name__)
@@ -23,6 +24,12 @@ def http_list_event():
     event_list = list_events(db_conn)
 
     user_name = request.headers.get('X-WEBAUTH-USER')
+
+    for event in event_list:
+        attendees = list_attendees(db_conn, event['id'])
+        shuffle(attendees)
+        event['attendees'] = attendees
+
     return render_template('list_event.html',
             events = event_list,
             user = user_name)
@@ -43,8 +50,6 @@ def http_edit_event(id):
     host = get_event(db_conn, int(id))[2]
 
     event_name = get_event(db_conn, int(id))[3]
-
-    list_attendees(db_conn, int(id))
 
     return render_template('edit_event.html',
             user = user_name,
@@ -430,9 +435,7 @@ def list_attendees(conn, eventId):
             passenger_names.append(passenger['name'])
 
     passenger_names.remove("Need Ride")
-    print(passenger_names)
-
-    return jsonify({ "attendees": passenger_names})
+    return passenger_names
 
 def remove_ride(conn, carId):
     c = conn.cursor()
