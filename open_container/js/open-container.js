@@ -3,7 +3,7 @@ endTime = ""
 
 times = []
 for(var i = 0; i < 24; ++i) {
-    for(var j = 0; j < 60; j += 5) {
+    for(var j = 0; j < 60; j += 15) {
         times.push(zeroPad(i, 2) + ":" + zeroPad(j, 2));
     }
 }

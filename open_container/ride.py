@@ -45,11 +45,21 @@ def http_edit_event(id):
     db_conn = load_database(DB_NAME)
     user_name = request.headers.get('X-WEBAUTH-USER')
 
-    rides = list_rides(db_conn, int(id))
+    try:
+        id = int(id)
+    except Exception:
+        return make_response(jsonify(
+            {
+                "code": 4,
+                "error": "input not an integer!"
+            }),
+            400)
 
-    host = get_event(db_conn, int(id))[2]
+    rides = list_rides(db_conn, id)
 
-    event_name = get_event(db_conn, int(id))[3]
+    host = get_event(db_conn, id)[2]
+
+    event_name = get_event(db_conn, id)[3]
 
     return render_template('edit_event.html',
             user = user_name,
@@ -66,6 +76,16 @@ def http_base():
 def http_create_ride(id):
     db_conn = load_database(DB_NAME)
     user_name = request.headers.get('X-WEBAUTH-USER')
+
+    try:
+        id = int(id)
+    except Exception:
+        return make_response(jsonify(
+            {
+                "code": 4,
+                "error": "input not an integer!"
+            }),
+            400)
 
     return render_template('create_ride.html',
             user = user_name,
