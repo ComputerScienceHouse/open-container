@@ -50,7 +50,7 @@
                         <td>
                         {% if ride['passengers']|selectattr('name', 'equalto', user)|list|length > 0 %}
                         {% set passengerId = (ride['passengers']|selectattr('name', 'equalto', user)|list|first).id %}
-                        <button type="button" onclick="leaveRide({{passengerId}});" class="btn btn-xs btn-success">Leave Ride</button>
+                        <button type="button" onclick="leaveRide({{passengerId}});" class="btn btn-xs btn-danger">Leave Ride</button>
                         {% else %}
                         <button type="button" onclick="joinRide({{ride['id']}}, '{{user}}');" class="btn btn-xs btn-success">Join Ride</button>
                         {% endif %}
