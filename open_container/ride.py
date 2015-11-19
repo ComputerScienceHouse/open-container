@@ -1,13 +1,15 @@
 import os
-import sqlite3
+import MySQLdb as mdb
 from datetime import datetime, date, timedelta, time
 from flask import Flask, jsonify, make_response, render_template, request, send_from_directory
 from random import shuffle
 import sys
+import json
 
 app = Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.do')
 
+db_conn = None
 DB_NAME = "test.db"
 @app.route('/js/<path:path>')
 def serve_js(path):
@@ -19,7 +21,6 @@ def serve_css(path):
 
 @app.route('/list/event')
 def http_list_event():
-    db_conn = load_database(DB_NAME)
 
     event_list = list_events(db_conn)
 
@@ -42,7 +43,6 @@ def http_create_event():
 
 @app.route('/edit/event/<id>')
 def http_edit_event(id):
-    db_conn = load_database(DB_NAME)
     user_name = request.headers.get('X-WEBAUTH-USER')
 
     try:
@@ -74,7 +74,6 @@ def http_base():
 
 @app.route('/create/ride/<id>')
 def http_create_ride(id):
-    db_conn = load_database(DB_NAME)
     user_name = request.headers.get('X-WEBAUTH-USER')
 
     try:
@@ -93,12 +92,11 @@ def http_create_ride(id):
 
 @app.route('/api/v1/create/event', methods=['POST'])
 def api_create_event():
-    db_conn = load_database(DB_NAME)
  
 
     try:
-        event_startTime = timestr_to_datetime(request.form['startTime'])
-        event_endTime = timestr_to_datetime(request.form['endTime'])
+        event_startTime = request.form['startTime']
+        event_endTime = request.form['endTime']
     except Exception:
         return make_response(jsonify(
             {
@@ -133,13 +131,12 @@ description, user)
 
 @app.route('/api/v1/create/ride', methods=['POST'])
 def api_create_ride():
-    db_conn = load_database(DB_NAME)
 
     error = None
 
     try:
-        ride_startTime = timestr_to_datetime(request.form['departureTime'])
-        ride_endTime = timestr_to_datetime(request.form['returnTime'])
+        ride_startTime = request.form['departureTime']
+        ride_endTime = request.form['returnTime']
     except Exception:
         return make_response(jsonify(
             {
@@ -187,7 +184,6 @@ ride_startTime, ride_endTime)
 
 @app.route('/api/v1/create/passenger', methods=['POST'])
 def api_create_passenger():
-    db_conn = load_database(DB_NAME)
 
     error = None
 
@@ -217,13 +213,11 @@ def api_create_passenger():
 
 @app.route('/api/v1/list/events', methods=['POST'])
 def api_list_events():
-    db_conn = load_database(DB_NAME)
 
     return jsonify({"events": list_events(db_conn)})
 
 @app.route('/api/v1/list/rides', methods=['POST'])
 def api_list_rides():
-    db_conn = load_database(DB_NAME)
 
     try:
         event_id = int(request.form['id'])
@@ -247,7 +241,6 @@ def api_list_rides():
 
 @app.route('/api/v1/remove/event', methods=['POST'])
 def api_remove_event():
-    db_conn = load_database(DB_NAME)
 
     try:
         event_id = int(request.form['eventId'])
@@ -265,7 +258,6 @@ def api_remove_event():
 
 @app.route('/api/v1/remove/ride', methods=['POST'])
 def api_remove_ride():
-    db_conn = load_database(DB_NAME)
 
     try:
         ride_id = int(request.form['id'])
@@ -283,7 +275,6 @@ def api_remove_ride():
 
 @app.route('/api/v1/remove/passenger', methods=['POST'])
 def api_remove_passenger():
-    db_conn = load_database(DB_NAME)
 
     try:
         passenger_id = int(request.form['id'])
@@ -305,41 +296,31 @@ def timestr_to_datetime(timestr):
 def datetime_to_timestr(date_time):
     return date_time.strftime("%Y-%m-%d %H:%M:%S")
 
-def create_database(file_name):
-    conn = sqlite3.connect(file_name)
+def create_database():
+    db_conn = connect_db()
 
     # tables
-    c = conn.cursor()
+    print("creating database")
+    c = db_conn.cursor()
 
     c.execute('''create table eventList
-(startTime datetime, endTime datetime, host text, name text, description text)''')
+(rowid INT NOT NULL AUTO_INCREMENT PRIMARY KEY, startTime text, endTime text, host text, name text, description text)''')
     c.execute('''create table rideList
-(eventId integer, capacity integer, comments text, driver text, departureTime datetime, returnTime datetime)''')
+(rowid INT NOT NULL AUTO_INCREMENT PRIMARY KEY, eventId integer, capacity integer, comments text, driver text, departureTime text, returnTime text)''')
     c.execute('''create table passengers
-(name text, carid integer)''')
+(rowid INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name text, carid integer)''')
 
-    conn.commit()
+    db_conn.commit()
 
     c.close()
-
-    return conn
-
-def load_database_from_file(file_name):
-    db_conn = sqlite3.connect(file_name)
-
-    return db_conn
-
-def load_database(file_name):
-    if not os.path.isfile(file_name):
-        return create_database(file_name)
-    else:
-        return load_database_from_file(file_name)
+    print("created database")
 
 def add_event(conn, startTime, endTime, name, description, host):
     c = conn.cursor()
 
+    print(startTime, endTime, name, description, host)
     c.execute('''insert into eventList (startTime, endTime, host, name, description)
-values (?, ?, ?, ?, ?)''', (startTime, endTime, host, name, description))
+values ("%s", "%s", "%s", "%s", "%s")''' % (startTime, endTime, host, name, description))
 
     conn.commit()
 
@@ -372,7 +353,7 @@ eventList order by endTime''')
 
 def get_event(conn, id):
     c = conn.cursor()
-    c.execute('''select * from eventList where rowid is %d''' % id)
+    c.execute('''select * from eventList where rowid=%d''' % id)
 
     for row in c:
         c.close()
@@ -386,11 +367,11 @@ def event_exists(conn, id):
 
 def remove_event(conn, id):
     c = conn.cursor()
-    c.execute('delete from eventList where rowid is %d' % id)
+    c.execute('delete from eventList where rowid=%d' % id)
 
     conn.commit()
 
-    c.execute('select rowid from rideList where eventId is %d' % id)
+    c.execute('select rowid from rideList where eventId=%d' % id)
     for ride in c:
         remove_ride(conn, ride[0])
 
@@ -402,10 +383,7 @@ def add_ride(conn, eventId, comments, capacity, driverName, startTime, endTime):
         raise Exception("Event DNE!")
 
     c = conn.cursor()
-    c.execute('''insert into rideList (eventId, capacity, comments, driver,
-departureTime, returnTIme)
-values (?, ?, ?, ?, ?, ?)''', (eventId, capacity, comments, driverName,
-startTime, endTime))
+    c.execute('''insert into rideList (eventId, capacity, comments, driver, departureTime, returnTime) values ("%s", "%s", "%s", "%s", "%s", "%s")''' % (eventId, capacity, comments, driverName, startTime, endTime))
 
     conn.commit()
 
@@ -418,13 +396,13 @@ def list_rides(conn, eventId):
         raise Exception("Event DNE!")
 
     c = conn.cursor()
-    c.execute('''select rowid, comments, capacity, departureTime, returnTime, driver from rideList where eventId is %d''' % eventId)
+    c.execute('''select rowid, comments, capacity, departureTime, returnTime, driver from rideList where eventId=%d''' % eventId)
 
     ride_list = []
 
     for ride in c:
         d = conn.cursor()
-        d.execute('select name, rowid from passengers where carId is %d' % ride[0])
+        d.execute('select name, rowid from passengers where carId=%d' % ride[0])
 
         passenger_list = []
 
@@ -459,10 +437,10 @@ def list_attendees(conn, eventId):
 
 def remove_ride(conn, carId):
     c = conn.cursor()
-    c.execute('select rowid from passengers where carId is %d' % carId)
+    c.execute('select rowid from passengers where carId=%d' % carId)
     for passenger in c:
         remove_passenger(conn, passenger)
-    c.execute('delete from rideList where rowid is %d' % carId)
+    c.execute('delete from rideList where rowid=%d' % carId)
 
     conn.commit()
 
@@ -470,14 +448,14 @@ def remove_ride(conn, carId):
 
 def ride_has_free_space(conn, carId):
     c = conn.cursor()
-    c.execute('select capacity from rideList where rowid is %d' % carId)
+    c.execute('select capacity from rideList where rowid=%d' % carId)
 
     capacity = 0
     for results in c:
         capacity = results[0]
 
     i = 0
-    c.execute('select * from passengers where carId is %d' % carId)
+    c.execute('select * from passengers where carId=%d' % carId)
     for row in c:
         i += 1
 
@@ -488,7 +466,7 @@ def ride_has_free_space(conn, carId):
 def ride_is_empty(conn, carId): 
     i = 0
     c = conn.cursor()
-    c.execute('select * from passengers where carId is %d' % carId)
+    c.execute('select * from passengers where carId=%d' % carId)
     for row in c:
         i += 1
 
@@ -502,8 +480,7 @@ def add_passenger(conn, rideId, name):
         raise Exception("Car is full!")
 
     c = conn.cursor()
-    c.execute('''insert into passengers (name, carId)
-values (?, ?)''', (name, rideId))
+    c.execute('''insert into passengers (name, carId) values ("%s", %d)''' %(name, rideId))
 
     c.close()
 
@@ -513,14 +490,14 @@ values (?, ?)''', (name, rideId))
 def remove_passenger(conn, passengerId):
     rideId = 0
     c = conn.cursor()
-    c.execute('select carId from passengers where rowid is %d' %passengerId)
+    c.execute('select carId from passengers where rowid=%d' %passengerId)
 
     for car in c:
         rideId = car[0]
 
     print("rideId: ", rideId)
 
-    c.execute('delete from passengers where rowid is %d' % passengerId)
+    c.execute('delete from passengers where rowid=%d' % passengerId)
     conn.commit()
 
     #if ride_is_empty(conn, rideId):
@@ -528,7 +505,18 @@ def remove_passenger(conn, passengerId):
 
     c.close()
 
+def connect_db():
+    json_config = None
+    with open('open-container.config') as data_file:
+        json_config = json.load(data_file)
+    
+    return mdb.connect(**json_config)
+
 def main():
+    global db_conn
+
+    db_conn = connect_db()
+
     app.run(debug=True, port=64957)
 
 if __name__ == "__main__":
