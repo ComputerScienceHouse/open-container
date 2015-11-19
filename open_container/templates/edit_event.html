@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Edit Event{% endblock %}
+{% block title %}Edit Rideboard{% endblock %}
 {% block body %}
       <div class="jumbotron">
 <h2>{{event_name}}</h2>
@@ -30,7 +30,7 @@
             {% for ride in rides %}
               <tr>
                 <td>{{ride['driver']}}</td>
-                {% if ride['capacity'] == 9223372036854775807 %}
+                {% if ride['capacity'] == 2 ** 32 %}
                 <td>&infin;</td>
                 {% else %}
                 <td>{{ride['passengers']|length}}/{{ride['capacity']}}</td>
@@ -70,7 +70,7 @@
                     <a href="/create/ride/{{event}}" class="btn btn-success">Create Ride</a>
                 {% endif %}
                 {% if user == host %}
-                <button type='button' onclick="removeEvent({{event}});" class="btn btn-danger">Delete Event</button>
+                <button type='button' onclick="removeEvent({{event}});" class="btn btn-danger">Delete Rideboard</button>
                 {% endif %}
                 </td>
             </tr>

@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% block title %}List Events{% endblock %}
 {% block body %}
+    {% if events|length == 0 %}
+      <div class="jumbotron">
+        <h1><center>No Upcoming Events</center></h1>
+      </div>
+    {% endif %}
       {% for event in events %}
       <div class="jumbotron">
         <h2>{{event['name']}}</h2>
@@ -9,7 +14,8 @@
         <h3>Hosted By: {{event['host']}}</h3>
         <p>{{event['description']}}</p>
         {% for person in event['attendees'] %}<img src="https://profiles.csh.rit.edu/image/{{person}}" width="50" height="50"/>{% endfor %}
-        <a type="button" href="/edit/event/{{event['id']}}" class="btn btn-lg btn-success">View Event</a>
+        <a type="button" href="/edit/event/{{event['id']}}" class="btn btn-lg
+btn-success">View Rideboard</a>
       </div>
         <hr>
       {% endfor %}
