@@ -325,7 +325,7 @@ values (?, ?, ?, ?, ?)''', (startTime, endTime, host, name, description))
 
     c.close()
 
-    add_ride(conn, c.lastrowid, "", sys.maxint, "Need Ride", startTime, endTime)
+    add_ride(conn, c.lastrowid, "", 2 ** 32, "Need Ride", startTime, endTime)
 
     return c.lastrowid
 
@@ -338,7 +338,7 @@ eventList order by endTime''')
     events = []
 
     for row in c:
-        t = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
+        t = datetime.strptime(row[0].split('.')[0], "%Y-%m-%d %H:%M:%S")
         # just check it against the date for now, more precision comes later
         if not all_of_time and t.date() < date.today():
             continue

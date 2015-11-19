@@ -14,19 +14,19 @@ class TestPassengers(unittest.TestCase):
 
         event_time = datetime.now() + timedelta(days=1)
 
-        ride.add_event(conn, event_time, "My Test Event")
+        wild_party = ride.add_event(conn, event_time, event_time + timedelta(hours=2),
+                        "My Test Event", "description",  "George")
 
-        event_time = event_time + timedelta(hours=4)
+        party_van = ride.add_ride(conn, wild_party,
+                "Party Van", 8, "Loothelion",
+                event_time - timedelta(minutes=30),
+                event_time + timedelta(hours=1))
 
-        wild_party = ride.add_event(conn, event_time, "My Event", "A Test Event")
+        ride.add_passenger(conn, party_van, "Isaac")
 
-        party_van = ride.add_ride(conn, wild_party, "Party Van", 8, "Loothelion")
+        ride.add_passenger(conn, party_van, "Nate")
 
-        ride.add_passenger(conn, party_van[0], "Isaac")
-
-        ride.add_passenger(conn, party_van[0], "Nate")
-
-        ride.add_passenger(conn, party_van[0], "Matt")
+        ride.add_passenger(conn, party_van, "Matt")
 
         os.remove(DB_NAME)
         pass
@@ -38,19 +38,19 @@ class TestPassengers(unittest.TestCase):
 
         event_time = datetime.now() + timedelta(days=1)
 
-        ride.add_event(conn, event_time, "My Test Event")
+        wild_party = ride.add_event(conn, event_time, event_time + timedelta(hours=2),
+                        "My Test Event", "description",  "George")
 
-        event_time = event_time + timedelta(hours=4)
+        party_van = ride.add_ride(conn, wild_party,
+                "Party Van", 8, "Loothelion",
+                event_time - timedelta(minutes=30),
+                event_time + timedelta(hours=1))
 
-        wild_party = ride.add_event(conn, event_time, "My Event", "A Test Event")
+        ride.add_passenger(conn, party_van, "Isaac")
 
-        party_van = ride.add_ride(conn, wild_party, "Party Van", 8, "Loothelion")
+        ride.add_passenger(conn, party_van, "Nate")
 
-        ride.add_passenger(conn, party_van[0], "Isaac")
-
-        ride.add_passenger(conn, party_van[0], "Nate")
-
-        ride.add_passenger(conn, party_van[0], "Matt")
+        ride.add_passenger(conn, party_van, "Matt")
 
         ride.list_rides(conn, wild_party)
 
@@ -64,19 +64,19 @@ class TestPassengers(unittest.TestCase):
 
         event_time = datetime.now() + timedelta(days=1)
 
-        ride.add_event(conn, event_time, "My Test Event")
+        wild_party = ride.add_event(conn, event_time, event_time + timedelta(hours=2),
+                        "My Test Event", "description",  "George")
 
-        event_time = event_time + timedelta(hours=4)
+        party_van = ride.add_ride(conn, wild_party,
+                "Party Van", 8, "Loothelion",
+                event_time - timedelta(minutes=30),
+                event_time + timedelta(hours=1))
 
-        wild_party = ride.add_event(conn, event_time, "My Event", "A Test Event")
+        isaac = ride.add_passenger(conn, party_van, "Isaac")
 
-        party_van = ride.add_ride(conn, wild_party, "Party Van", 8, "Loothelion")
+        ride.add_passenger(conn, party_van, "Nate")
 
-        isaac = ride.add_passenger(conn, party_van[0], "Isaac")
-
-        ride.add_passenger(conn, party_van[0], "Nate")
-
-        ride.add_passenger(conn, party_van[0], "Matt")
+        ride.add_passenger(conn, party_van, "Matt")
 
         ride.list_rides(conn, wild_party)
 
@@ -94,30 +94,30 @@ class TestPassengers(unittest.TestCase):
 
         event_time = datetime.now() + timedelta(days=1)
 
-        ride.add_event(conn, event_time, "My Test Event")
+        wild_party = ride.add_event(conn, event_time, event_time + timedelta(hours=2),
+                        "My Test Event", "description",  "George")
 
-        event_time = event_time + timedelta(hours=4)
+        party_van = ride.add_ride(conn, wild_party,
+                "Party Van", 8, "Loothelion",
+                event_time - timedelta(minutes=30),
+                event_time + timedelta(hours=1))
 
-        wild_party = ride.add_event(conn, event_time, "My Event", "A Test Event")
+        isaac = ride.add_passenger(conn, party_van, "Isaac")
 
-        party_van = ride.add_ride(conn, wild_party, "Party Van", 8, "Loothelion")
+        ride.add_passenger(conn, party_van, "Nate")
 
-        isaac = ride.add_passenger(conn, party_van[0], "Isaac")
+        ride.add_passenger(conn, party_van, "Matt")
 
-        ride.add_passenger(conn, party_van[0], "Nate")
+        ride.add_passenger(conn, party_van, "Andrew")
 
-        ride.add_passenger(conn, party_van[0], "Matt")
+        ride.add_passenger(conn, party_van, "Julien")
 
-        ride.add_passenger(conn, party_van[0], "Andrew")
+        ride.add_passenger(conn, party_van, "Rose")
 
-        ride.add_passenger(conn, party_van[0], "Julien")
-
-        ride.add_passenger(conn, party_van[0], "Rose")
-
-        ride.add_passenger(conn, party_van[0], "Max")
+        ride.add_passenger(conn, party_van, "Max")
 
         try:
-            ride.add_passenger(conn, party_van[0], "Brandon/Tanat")
+            ride.add_passenger(conn, party_van, "Brandon/Tanat")
         except Exception:
             print("This should be reached, don't worry about it!")
 

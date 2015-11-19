@@ -14,11 +14,8 @@ class TestEvents(unittest.TestCase):
 
         event_time = datetime.now() + timedelta(days=1)
 
-        ride.add_event(conn, event_time, "My Test Event")
-
-        event_time = event_time + timedelta(hours=4)
-
-        ride.add_event(conn, event_time, "My Event", "A Test Event")
+        ride.add_event(conn, event_time, event_time + timedelta(hours=2),
+                        "My Test Event", "description",  "George")
 
         os.remove(DB_NAME)
         pass
@@ -30,11 +27,8 @@ class TestEvents(unittest.TestCase):
 
         event_time = datetime.now() + timedelta(days=1)
 
-        ride.add_event(conn, event_time, "My Test Event")
-
-        event_time = event_time + timedelta(hours=4)
-
-        ride.add_event(conn, event_time, "My Event", "A Test Event")
+        ride.add_event(conn, event_time, event_time + timedelta(hours=2),
+                        "My Test Event", "description",  "George")
 
         ride.list_events(conn)
 
@@ -48,11 +42,10 @@ class TestEvents(unittest.TestCase):
 
         event_time = datetime.now() + timedelta(days=1)
 
-        ride.add_event(conn, event_time, "My Test Event")
 
-        event_time = event_time + timedelta(hours=4)
 
-        wild_party = ride.add_event(conn, event_time, "My Event", "A Test Event")
+        wild_party = ride.add_event(conn, event_time, event_time + timedelta(hours=2),
+                        "My Test Event", "description",  "George")
 
         ride.remove_event(conn, wild_party)
 

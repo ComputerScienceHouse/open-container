@@ -14,13 +14,13 @@ class TestRides(unittest.TestCase):
 
         event_time = datetime.now() + timedelta(days=1)
 
-        ride.add_event(conn, event_time, "My Test Event")
+        wild_party = ride.add_event(conn, event_time, event_time + timedelta(hours=2),
+                        "My Test Event", "description",  "George")
 
-        event_time = event_time + timedelta(hours=4)
-
-        wild_party = ride.add_event(conn, event_time, "My Event", "A Test Event")
-
-        ride.add_ride(conn, wild_party, "Party Van", 8, "Loothelion")
+        party_van = ride.add_ride(conn, wild_party,
+                "Party Van", 8, "Loothelion",
+                event_time - timedelta(minutes=30),
+                event_time + timedelta(hours=1))
 
         os.remove(DB_NAME)
         pass
@@ -32,13 +32,13 @@ class TestRides(unittest.TestCase):
 
         event_time = datetime.now() + timedelta(days=1)
 
-        ride.add_event(conn, event_time, "My Test Event")
+        wild_party = ride.add_event(conn, event_time, event_time + timedelta(hours=2),
+                        "My Test Event", "description",  "George")
 
-        event_time = event_time + timedelta(hours=4)
-
-        wild_party = ride.add_event(conn, event_time, "My Event", "A Test Event")
-
-        ride.add_ride(conn, wild_party, "Party Van", 8, "Loothelion")
+        party_van = ride.add_ride(conn, wild_party,
+                "Party Van", 8, "Loothelion",
+                event_time - timedelta(minutes=30),
+                event_time + timedelta(hours=1))
 
         ride.list_rides(conn, wild_party)
 
@@ -52,17 +52,17 @@ class TestRides(unittest.TestCase):
 
         event_time = datetime.now() + timedelta(days=1)
 
-        ride.add_event(conn, event_time, "My Test Event")
+        wild_party = ride.add_event(conn, event_time, event_time + timedelta(hours=2),
+                        "My Test Event", "description",  "George")
 
-        event_time = event_time + timedelta(hours=4)
-
-        wild_party = ride.add_event(conn, event_time, "My Event", "A Test Event")
-
-        party_van = ride.add_ride(conn, wild_party, "Party Van", 8, "Loothelion")
+        party_van = ride.add_ride(conn, wild_party,
+                "Party Van", 8, "Loothelion",
+                event_time - timedelta(minutes=30),
+                event_time + timedelta(hours=1))
 
         ride.list_rides(conn, wild_party)
 
-        ride.remove_ride(conn, party_van[0])
+        ride.remove_ride(conn, party_van)
 
         ride.list_rides(conn, wild_party)
 
