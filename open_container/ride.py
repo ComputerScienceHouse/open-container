@@ -57,9 +57,9 @@ def http_edit_event(id):
 
     rides = list_rides(db_conn, id)
 
-    host = get_event(db_conn, id)[2]
+    host = get_event(db_conn, id)[3]
 
-    event_name = get_event(db_conn, id)[3]
+    event_name = get_event(db_conn, id)[4]
 
     return render_template('edit_event.html',
             user = user_name,
@@ -291,10 +291,10 @@ def api_remove_passenger():
     return ""
 
 def timestr_to_datetime(timestr):
-    return datetime.strptime(timestr, "%Y-%m-%d %H:%M:%S")
+    return datetime.strptime(timestr, "%Y-%m-%d %H:%M")
 
 def datetime_to_timestr(date_time):
-    return date_time.strftime("%Y-%m-%d %H:%M:%S")
+    return date_time.strftime("%Y-%m-%d %H:%M")
 
 def create_database():
     db_conn = connect_db()
@@ -320,13 +320,13 @@ def add_event(conn, startTime, endTime, name, description, host):
 
     print(startTime, endTime, name, description, host)
     c.execute('''insert into eventList (startTime, endTime, host, name, description)
-values ("%s", "%s", "%s", "%s", "%s")''' % (startTime, endTime, host, name, description))
+values (%s, %s, %s, %s, %s)''', (startTime, endTime, host, name, description))
 
     conn.commit()
 
     c.close()
 
-    add_ride(conn, c.lastrowid, "", 2 ** 32, "Need Ride", startTime, endTime)
+    add_ride(conn, c.lastrowid, "", 2 ** 16, "Need Ride", startTime, endTime)
 
     return c.lastrowid
 
@@ -339,7 +339,8 @@ eventList order by endTime''')
     events = []
 
     for row in c:
-        t = datetime.strptime(row[0].split('.')[0], "%Y-%m-%d %H:%M:%S")
+        print(row[0])
+        t = datetime.strptime(row[0].strip('\''), "%Y-%m-%d %H:%M")
         # just check it against the date for now, more precision comes later
         if not all_of_time and t.date() < date.today():
             continue
@@ -383,7 +384,7 @@ def add_ride(conn, eventId, comments, capacity, driverName, startTime, endTime):
         raise Exception("Event DNE!")
 
     c = conn.cursor()
-    c.execute('''insert into rideList (eventId, capacity, comments, driver, departureTime, returnTime) values ("%s", "%s", "%s", "%s", "%s", "%s")''' % (eventId, capacity, comments, driverName, startTime, endTime))
+    c.execute('''insert into rideList (eventId, capacity, comments, driver, departureTime, returnTime) values (%s, %s, %s, %s, %s, %s)''', (eventId, capacity, comments, driverName, startTime, endTime))
 
     conn.commit()
 
@@ -480,7 +481,7 @@ def add_passenger(conn, rideId, name):
         raise Exception("Car is full!")
 
     c = conn.cursor()
-    c.execute('''insert into passengers (name, carId) values ("%s", %d)''' %(name, rideId))
+    c.execute('''insert into passengers (name, carId) values (%s, %d)''', (name, rideId))
 
     c.close()
 

@@ -72,11 +72,11 @@ function zeroPad(num, places) {
     function submit_createRide(id, name) {
         startTime_d = zeroPad(startTime.getFullYear(), 4) + "-" + zeroPad(startTime.getMonth() + 1, 2)
         + "-" + zeroPad(startTime.getDate(), 2) + " " + zeroPad(startTime.getHours(), 2) + ":"
-        + zeroPad(startTime.getMinutes(), 2) + ":00";
+        + zeroPad(startTime.getMinutes(), 2);
 
         endTime_d = zeroPad(endTime.getFullYear(), 4) + "-" + zeroPad(endTime.getMonth() + 1, 2)
         + "-" + zeroPad(endTime.getDate(), 2) + " " + zeroPad(endTime.getHours(), 2) + ":"
-        + zeroPad(endTime.getMinutes(), 2) + ":00";
+        + zeroPad(endTime.getMinutes(), 2);
 
             $.ajax({
                 url: "/api/v1/create/ride",
@@ -101,11 +101,11 @@ function zeroPad(num, places) {
 function submit_createEvent(user) {
     startTime_d = zeroPad(startTime.getFullYear(), 4) + "-" + zeroPad(startTime.getMonth() + 1, 2)
     + "-" + zeroPad(startTime.getDate(), 2) + " " + zeroPad(startTime.getHours(), 2) + ":"
-    + zeroPad(startTime.getMinutes(), 2) + ":00";
+    + zeroPad(startTime.getMinutes(), 2);
 
     endTime_d = zeroPad(endTime.getFullYear(), 4) + "-" + zeroPad(endTime.getMonth() + 1, 2)
     + "-" + zeroPad(endTime.getDate(), 2) + " " + zeroPad(endTime.getHours(), 2) + ":"
-    + zeroPad(endTime.getMinutes(), 2) + ":00";
+    + zeroPad(endTime.getMinutes(), 2);
 
 console.log(startTime_d + " " + endTime_d);
     $.ajax({

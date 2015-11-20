@@ -30,7 +30,7 @@
             {% for ride in rides %}
               <tr>
                 <td>{{ride['driver']}}</td>
-                {% if ride['capacity'] == 2 ** 32 %}
+                {% if ride['capacity'] == 2 ** 16 %}
                 <td>&infin;</td>
                 {% else %}
                 <td>{{ride['passengers']|length}}/{{ride['capacity']}}</td>
