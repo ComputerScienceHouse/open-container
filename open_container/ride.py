@@ -6,6 +6,12 @@ from random import shuffle
 import sys
 import json
 
+class CarFullError(Exception):
+    pass
+
+class EventExistenceError(Exception):
+    pass
+
 app = Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.do')
 
@@ -47,19 +53,24 @@ def http_edit_event(id):
 
     try:
         id = int(id)
-    except Exception:
+    except ValueError:
         return make_response(jsonify(
             {
                 "code": 4,
                 "error": "input not an integer!"
             }),
             400)
-
-    rides = list_rides(db_conn, id)
-
-    host = get_event(db_conn, id)[3]
-
-    event_name = get_event(db_conn, id)[4]
+    try:
+        rides = list_rides(db_conn, id)
+        host = get_event(db_conn, id)[3]
+        event_name = get_event(db_conn, id)[4]
+    except EventExistenceError:
+        return make_response(jsonify(
+            {
+                "code": 1,
+                "error": "event DNE!"
+            }),
+            400)
 
     return render_template('edit_event.html',
             user = user_name,
@@ -78,7 +89,7 @@ def http_create_ride(id):
 
     try:
         id = int(id)
-    except Exception:
+    except ValueError:
         return make_response(jsonify(
             {
                 "code": 4,
@@ -97,7 +108,7 @@ def api_create_event():
     try:
         event_startTime = request.form['startTime']
         event_endTime = request.form['endTime']
-    except Exception:
+    except ValueError:
         return make_response(jsonify(
             {
                 "code": 2,
@@ -137,7 +148,7 @@ def api_create_ride():
     try:
         ride_startTime = request.form['departureTime']
         ride_endTime = request.form['returnTime']
-    except Exception:
+    except ValueError:
         return make_response(jsonify(
             {
                 "code": 2,
@@ -147,7 +158,7 @@ def api_create_ride():
 
     try:
         event_id = int(request.form['eventId'])
-    except Exception:
+    except ValueError:
         return make_response(jsonify(
             {
                 "code": 4,
@@ -159,7 +170,9 @@ def api_create_ride():
 
     try:
         capacity = int(request.form['capacity'])
-    except Exception:
+        if capacity <= 0:
+            raise CarFullError("< 0!")
+    except ValueError:
         return make_response(jsonify(
             {
                 "code": 4,
@@ -172,7 +185,7 @@ def api_create_ride():
     try:
         ride_data = add_ride(db_conn, event_id, comments, capacity, driver_name,
 ride_startTime, ride_endTime)
-    except Exception:
+    except EventExistenceError:
         return make_response(jsonify(
             {
                 "code": 1,
@@ -189,7 +202,7 @@ def api_create_passenger():
 
     try:
         car_id = int(request.form['carId'])
-    except Exception:
+    except ValueError:
         return make_response(jsonify(
             {
                 "code": 4,
@@ -201,7 +214,7 @@ def api_create_passenger():
 
     try:
         passenger_data = add_passenger(db_conn, car_id, name)
-    except Exception:
+    except CarFullError:
         return make_response(jsonify(
             {
                 "code": 2,
@@ -221,7 +234,7 @@ def api_list_rides():
 
     try:
         event_id = int(request.form['id'])
-    except Exception:
+    except ValueError:
         return make_response(jsonify(
             {
                 "code": 4,
@@ -231,7 +244,7 @@ def api_list_rides():
 
     try:
         return jsonify({"rides": list_rides(db_conn, event_id)})
-    except Exception:
+    except EventExistenceError:
         return make_response(jsonify(
             {
                 "code": 1,
@@ -244,7 +257,7 @@ def api_remove_event():
 
     try:
         event_id = int(request.form['eventId'])
-    except Exception:
+    except ValueError:
         return make_response(jsonify(
             {
                 "code": 4,
@@ -261,7 +274,7 @@ def api_remove_ride():
 
     try:
         ride_id = int(request.form['id'])
-    except Exception:
+    except ValueError:
         return make_response(jsonify(
             {
                 "code": 4,
@@ -278,7 +291,7 @@ def api_remove_passenger():
 
     try:
         passenger_id = int(request.form['id'])
-    except Exception:
+    except ValueError:
         return make_response(jsonify(
             {
                 "code": 4,
@@ -381,7 +394,7 @@ def remove_event(conn, id):
 
 def add_ride(conn, eventId, comments, capacity, driverName, startTime, endTime):
     if not event_exists(conn, eventId):
-        raise Exception("Event DNE!")
+        raise EventExistenceError("Event DNE!")
 
     c = conn.cursor()
     c.execute('''insert into rideList (eventId, capacity, comments, driver, departureTime, returnTime) values (%s, %s, %s, %s, %s, %s)''', (eventId, capacity, comments, driverName, startTime, endTime))
@@ -394,7 +407,7 @@ def add_ride(conn, eventId, comments, capacity, driverName, startTime, endTime):
 
 def list_rides(conn, eventId):
     if not event_exists(conn, eventId):
-        raise Exception("Event DNE!")
+        raise EventExistenceError("Event DNE!")
 
     c = conn.cursor()
     c.execute('''select rowid, comments, capacity, departureTime, returnTime, driver from rideList where eventId=%d''' % eventId)
@@ -478,7 +491,7 @@ def ride_is_empty(conn, carId):
 
 def add_passenger(conn, rideId, name):
     if not ride_has_free_space(conn, rideId):
-        raise Exception("Car is full!")
+        raise CarFullError("Car is full!")
 
     c = conn.cursor()
     print(name, rideId)
