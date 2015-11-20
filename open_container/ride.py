@@ -481,7 +481,8 @@ def add_passenger(conn, rideId, name):
         raise Exception("Car is full!")
 
     c = conn.cursor()
-    c.execute('''insert into passengers (name, carId) values (%s, %d)''', (name, rideId))
+    print(name, rideId)
+    c.execute('''insert into passengers (name, carid) values (%s, %s)''', (name, rideId))
 
     c.close()
 
