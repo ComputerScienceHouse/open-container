@@ -12,6 +12,27 @@ class CarFullError(Exception):
 class EventExistenceError(Exception):
     pass
 
+def connect_db():
+    json_config = None
+    with open('open-container.config') as data_file:
+        json_config = json.load(data_file)
+    
+    return mdb.connect(**json_config)
+
+def query_2(cursor, sql):
+    try:
+        cursor.execute(sql)
+    except (AttributeError, mdb.OperationalError):
+        db_conn = connect_db()
+        cursor.execute(sql)
+
+def query_3(cursor, sql, params):
+    try:
+        cursor.execute(sql, params)
+    except (AttributeError, mdb.OperationalError):
+        db_conn = connect_db()
+        cursor.execute(sql, params)
+
 app = Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.do')
 
@@ -316,11 +337,11 @@ def create_database():
     print("creating database")
     c = db_conn.cursor()
 
-    c.execute('''create table eventList
+    query_2(c, '''create table eventList
 (rowid INT NOT NULL AUTO_INCREMENT PRIMARY KEY, startTime text, endTime text, host text, name text, description text)''')
-    c.execute('''create table rideList
+    query_2(c, '''create table rideList
 (rowid INT NOT NULL AUTO_INCREMENT PRIMARY KEY, eventId integer, capacity integer, comments text, driver text, departureTime text, returnTime text)''')
-    c.execute('''create table passengers
+    query_2(c, '''create table passengers
 (rowid INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name text, carid integer)''')
 
     db_conn.commit()
@@ -332,7 +353,7 @@ def add_event(conn, startTime, endTime, name, description, host):
     c = conn.cursor()
 
     print(startTime, endTime, name, description, host)
-    c.execute('''insert into eventList (startTime, endTime, host, name, description)
+    query_3(c, '''insert into eventList (startTime, endTime, host, name, description)
 values (%s, %s, %s, %s, %s)''', (startTime, endTime, host, name, description))
 
     conn.commit()
@@ -346,7 +367,7 @@ values (%s, %s, %s, %s, %s)''', (startTime, endTime, host, name, description))
 def list_events(conn, all_of_time=False):
     c = conn.cursor()
 
-    c.execute('''select startTime, endTime, host, name, description, rowid from
+    query_2(c, '''select startTime, endTime, host, name, description, rowid from
 eventList order by endTime''')
 
     events = []
@@ -367,7 +388,7 @@ eventList order by endTime''')
 
 def get_event(conn, id):
     c = conn.cursor()
-    c.execute('''select * from eventList where rowid=%d''' % id)
+    query_2(c, '''select * from eventList where rowid=%d''' % id)
 
     for row in c:
         c.close()
@@ -381,11 +402,11 @@ def event_exists(conn, id):
 
 def remove_event(conn, id):
     c = conn.cursor()
-    c.execute('delete from eventList where rowid=%d' % id)
+    query_2(c, 'delete from eventList where rowid=%d' % id)
 
     conn.commit()
 
-    c.execute('select rowid from rideList where eventId=%d' % id)
+    query_2(c, 'select rowid from rideList where eventId=%d' % id)
     for ride in c:
         remove_ride(conn, ride[0])
 
@@ -397,7 +418,7 @@ def add_ride(conn, eventId, comments, capacity, driverName, startTime, endTime):
         raise EventExistenceError("Event DNE!")
 
     c = conn.cursor()
-    c.execute('''insert into rideList (eventId, capacity, comments, driver, departureTime, returnTime) values (%s, %s, %s, %s, %s, %s)''', (eventId, capacity, comments, driverName, startTime, endTime))
+    query_3(c, '''insert into rideList (eventId, capacity, comments, driver, departureTime, returnTime) values (%s, %s, %s, %s, %s, %s)''', (eventId, capacity, comments, driverName, startTime, endTime))
 
     conn.commit()
 
@@ -410,7 +431,7 @@ def list_rides(conn, eventId):
         raise EventExistenceError("Event DNE!")
 
     c = conn.cursor()
-    c.execute('''select rowid, comments, capacity, departureTime, returnTime, driver from rideList where eventId=%d''' % eventId)
+    query_2(c, '''select rowid, comments, capacity, departureTime, returnTime, driver from rideList where eventId=%d''' % eventId)
 
     ride_list = []
 
@@ -451,10 +472,10 @@ def list_attendees(conn, eventId):
 
 def remove_ride(conn, carId):
     c = conn.cursor()
-    c.execute('select rowid from passengers where carId=%d' % carId)
+    query_2(c, 'select rowid from passengers where carId=%d' % carId)
     for passenger in c:
         remove_passenger(conn, passenger)
-    c.execute('delete from rideList where rowid=%d' % carId)
+    query_2(c, 'delete from rideList where rowid=%d' % carId)
 
     conn.commit()
 
@@ -462,14 +483,14 @@ def remove_ride(conn, carId):
 
 def ride_has_free_space(conn, carId):
     c = conn.cursor()
-    c.execute('select capacity from rideList where rowid=%d' % carId)
+    query_2(c, 'select capacity from rideList where rowid=%d' % carId)
 
     capacity = 0
     for results in c:
         capacity = results[0]
 
     i = 0
-    c.execute('select * from passengers where carId=%d' % carId)
+    query_2(c, 'select * from passengers where carId=%d' % carId)
     for row in c:
         i += 1
 
@@ -480,7 +501,7 @@ def ride_has_free_space(conn, carId):
 def ride_is_empty(conn, carId): 
     i = 0
     c = conn.cursor()
-    c.execute('select * from passengers where carId=%d' % carId)
+    query_2(c, 'select * from passengers where carId=%d' % carId)
     for row in c:
         i += 1
 
@@ -495,7 +516,7 @@ def add_passenger(conn, rideId, name):
 
     c = conn.cursor()
     print(name, rideId)
-    c.execute('''insert into passengers (name, carid) values (%s, %s)''', (name, rideId))
+    query_3(c, '''insert into passengers (name, carid) values (%s, %s)''', (name, rideId))
 
     c.close()
 
@@ -505,27 +526,20 @@ def add_passenger(conn, rideId, name):
 def remove_passenger(conn, passengerId):
     rideId = 0
     c = conn.cursor()
-    c.execute('select carId from passengers where rowid=%d' %passengerId)
+    query_2(c, 'select carId from passengers where rowid=%d' %passengerId)
 
     for car in c:
         rideId = car[0]
 
     print("rideId: ", rideId)
 
-    c.execute('delete from passengers where rowid=%d' % passengerId)
+    query_2(c, 'delete from passengers where rowid=%d' % passengerId)
     conn.commit()
 
     #if ride_is_empty(conn, rideId):
     #    remove_ride(conn, rideId)
 
     c.close()
-
-def connect_db():
-    json_config = None
-    with open('open-container.config') as data_file:
-        json_config = json.load(data_file)
-    
-    return mdb.connect(**json_config)
 
 def main():
     global db_conn
