@@ -6,18 +6,19 @@ from random import shuffle
 import sys
 import json
 
+
+json_config = None
+with open('open-container.config') as data_file:
+    json_config = json.load(data_file)
+
 class CarFullError(Exception):
     pass
 
 class EventExistenceError(Exception):
     pass
 
-def connect_db():
-    json_config = None
-    with open('open-container.config') as data_file:
-        json_config = json.load(data_file)
-    
-    return mdb.connect(**json_config)
+def connect_db():    
+    return mdb.connect(**json_config['mysql'])
 
 def query_2(cursor, sql):
     try:
@@ -546,7 +547,7 @@ def main():
 
     db_conn = connect_db()
 
-    app.run(debug=True, port=64957)
+    app.run(debug=True, port=json_config['port'])
 
 if __name__ == "__main__":
     main()
