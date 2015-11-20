@@ -21,16 +21,20 @@ def connect_db():
     return mdb.connect(**json_config['mysql'])
 
 def query_2(cursor, sql):
+    global db_conn
+    db_conn.ping(True)
     try:
         cursor.execute(sql)
-    except mdb.OperationalError:
+    except Exception:
         db_conn = connect_db()
         cursor.execute(sql)
 
 def query_3(cursor, sql, params):
+    global db_conn
+    db_conn.ping(True)
     try:
         cursor.execute(sql, params)
-    except mdb.OperationalError:
+    except Exception:
         db_conn = connect_db()
         cursor.execute(sql, params)
 
@@ -547,7 +551,7 @@ def main():
 
     db_conn = connect_db()
 
-    app.run(debug=True, port=json_config['port'])
+    app.run(debug=json_config['debug'], port=json_config['port'])
 
 if __name__ == "__main__":
     main()
