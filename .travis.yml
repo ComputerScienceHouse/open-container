@@ -1,4 +1,4 @@
 language: python
-install: pip install tox
-script: tox
+install: pip install tox MySQL-python
+script: true
 sudo: false
