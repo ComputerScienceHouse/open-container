@@ -22,14 +22,14 @@ def connect_db():
 def query_2(cursor, sql):
     try:
         cursor.execute(sql)
-    except (AttributeError, mdb.OperationalError):
+    except mdb.OperationalError:
         db_conn = connect_db()
         cursor.execute(sql)
 
 def query_3(cursor, sql, params):
     try:
         cursor.execute(sql, params)
-    except (AttributeError, mdb.OperationalError):
+    except mdb.OperationalError:
         db_conn = connect_db()
         cursor.execute(sql, params)
 
@@ -437,7 +437,7 @@ def list_rides(conn, eventId):
 
     for ride in c:
         d = conn.cursor()
-        d.execute('select name, rowid from passengers where carId=%d' % ride[0])
+        query_2(d, 'select name, rowid from passengers where carId=%d' % ride[0])
 
         passenger_list = []
 
