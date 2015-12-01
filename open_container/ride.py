@@ -130,7 +130,6 @@ def http_create_ride(id):
 @app.route('/api/v1/create/event', methods=['POST'])
 def api_create_event():
  
-
     try:
         event_startTime = request.form['startTime']
         event_endTime = request.form['endTime']
@@ -291,6 +290,18 @@ def api_remove_event():
             }),
             400)
 
+    user_name = request.headers.get('X-WEBAUTH-USER')
+
+    host_name = get_host_name(db_conn, event_id)
+
+    if user_name != host_name:
+        return make_response(jsonify(
+            {
+                "code": 5,
+                "error": "you are not that host!"
+            }),
+            400)
+
     remove_event(db_conn, event_id)
 
     return ""
@@ -308,6 +319,18 @@ def api_remove_ride():
             }),
             400)
 
+    user_name = request.headers.get('X-WEBAUTH-USER')
+
+    driver_name = get_driver_name(db_conn, ride_id)
+
+    if user_name != driver_name:
+        return make_response(jsonify(
+            {
+                "code": 5,
+                "error": "you are not that driver!"
+            }),
+            400)
+
     remove_ride(db_conn, ride_id)
 
     return ""
@@ -322,6 +345,18 @@ def api_remove_passenger():
             {
                 "code": 4,
                 "error": "passengerId must be an integer value!"
+            }),
+            400)
+
+    user_name = request.headers.get('X-WEBAUTH-USER')
+
+    passenger_name = get_passenger_name(db_conn, ride_id)
+
+    if user_name != passenger_name:
+        return make_response(jsonify(
+            {
+                "code": 5,
+                "error": "you are not that passenger!"
             }),
             400)
 
@@ -545,6 +580,31 @@ def remove_passenger(conn, passengerId):
     #    remove_ride(conn, rideId)
 
     c.close()
+
+def get_host_name(conn, eventId):
+    c = conn.cursor()
+    query_2(c, '''select host from eventList where rowid=%d''' % eventId)
+
+    for event in c:
+        return event[0]
+    return ""
+
+def get_driver_name(conn, rideId):
+
+    c = conn.cursor()
+    query_2(c, '''select driver from rideList where rowid=%d''' % rideId)
+
+    for car in c:
+        return car[0]
+    return ""
+
+def get_passenger_name(conn, passengerId):
+    c = conn.cursor()
+    query_2(c, 'select name from passengers where rowid=%d' % passengerId)
+
+    for name in c:
+        return name
+    return ""
 
 def main():
     global db_conn
