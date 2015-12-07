@@ -353,8 +353,10 @@ def api_remove_passenger():
 
     user_name = request.headers.get('X-WEBAUTH-USER')
 
-    passenger_name = get_passenger_name(db_conn, ride_id)
+    passenger_name = get_passenger_name(db_conn, passenger_id)
 
+    print(passenger_name)
+    print(user_name)
     if user_name != passenger_name:
         return make_response(jsonify(
             {
@@ -606,7 +608,7 @@ def get_passenger_name(conn, passengerId):
     query_2(c, 'select name from passengers where rowid=%d' % passengerId)
 
     for name in c:
-        return name
+        return name[0]
     return ""
 
 def main():
