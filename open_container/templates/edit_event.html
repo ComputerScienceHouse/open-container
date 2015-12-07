@@ -4,6 +4,7 @@
       <div class="jumbotron">
 <h2>{{event_name}}</h2>
 <h3>Hosted By: {{host}}</h3>
+<p>{{description}}</p>
       </div>
 {% set inRides = [] %}
 {% set driverId = rides|selectattr('driver', 'equalto', user)|list|length %}
@@ -12,6 +13,8 @@
         {% if ride['passengers']|selectattr('name', 'equalto', user)|list|length > 0 %}
             {% do inRides.append(ride['id']) %}
         {% endif %}
+    {% else %}
+        {% do inRides.append(driverId) %}
     {% endif %}
 {% endfor %}
           <table class="table">

@@ -8,7 +8,7 @@ import json
 
 
 json_config = None
-with open('open-container.config') as data_file:
+with open(sys.argv[1]) as data_file:
     json_config = json.load(data_file)
 
 class CarFullError(Exception):
@@ -88,7 +88,9 @@ def http_edit_event(id):
             400)
     try:
         rides = list_rides(db_conn, id)
-        host = get_event(db_conn, id)[3]
+        ride = get_event(db_conn, id)
+        host = ride[3]
+        description = ride[5]
         event_name = get_event(db_conn, id)[4]
     except EventExistenceError:
         return make_response(jsonify(
@@ -102,6 +104,7 @@ def http_edit_event(id):
             user = user_name,
             event = id,
             host = host,
+            description = description,
             event_name = event_name,
             rides = rides)
 
