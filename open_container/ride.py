@@ -153,18 +153,11 @@ def api_create_event():
             }),
             400)
 
-    user = request.form['driver']
-    if user == "":
-        return make_response(jsonify(
-            {
-                "code": 3,
-                "error": "empty string not accepted for name!"
-            }),
-            400)
+    user_name = request.headers.get('X-WEBAUTH-USER')
 
     description = request.form['description']
     event_id = add_event(db_conn, event_startTime, event_endTime, name,
-description, user)
+                            description, user_name)
 
     return jsonify({"id":event_id})
 
@@ -208,10 +201,10 @@ def api_create_ride():
             }),
             400)
 
-    driver_name = request.form['driverName']
+    user_name = request.headers.get('X-WEBAUTH-USER')
 
     try:
-        ride_data = add_ride(db_conn, event_id, comments, capacity, driver_name,
+        ride_data = add_ride(db_conn, event_id, comments, capacity, user_name,
 ride_startTime, ride_endTime)
     except EventExistenceError:
         return make_response(jsonify(
@@ -238,10 +231,10 @@ def api_create_passenger():
             }),
             400)
 
-    name = request.form['name']
+    user_name = request.headers.get('X-WEBAUTH-USER')
 
     try:
-        passenger_data = add_passenger(db_conn, car_id, name)
+        passenger_data = add_passenger(db_conn, car_id, user_name)
     except CarFullError:
         return make_response(jsonify(
             {

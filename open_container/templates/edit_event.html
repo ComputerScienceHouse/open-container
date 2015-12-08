@@ -56,7 +56,7 @@ class="btn btn-xs btn-danger">Leave Ride</button></td>
                             <td><span class="label label-danger">Ride Full</span>
                         {% else %}
                             <td>
-                            <button type="button" onclick="joinRide({{ride['id']}}, '{{user}}');" class="btn btn-xs btn-success">Join Ride</button>
+                            <button type="button" onclick="joinRide({{ride['id']}});" class="btn btn-xs btn-success">Join Ride</button>
                         {% endif %}
                     {% endif %}
                 {% endif %}

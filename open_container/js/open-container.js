@@ -13,11 +13,11 @@ function zeroPad(num, places) {
   return Array(+(zero > 0 && zero)).join("0") + num;
 }
 
-        function joinRide(id, name) {
+        function joinRide(id) {
             $.ajax({
                 url: "/api/v1/create/passenger",
                 type: "POST",
-                data: { carId: id, name: name },
+                data: { carId: id},
                 error: function(msg) {
                     console.log(msg);
                 },
@@ -69,7 +69,7 @@ function zeroPad(num, places) {
                 }
             });
         }
-    function submit_createRide(id, name) {
+    function submit_createRide(id) {
         startTime_d = zeroPad(startTime.getFullYear(), 4) + "-" + zeroPad(startTime.getMonth() + 1, 2)
         + "-" + zeroPad(startTime.getDate(), 2) + " " + zeroPad(startTime.getHours(), 2) + ":"
         + zeroPad(startTime.getMinutes(), 2);
@@ -84,7 +84,6 @@ function zeroPad(num, places) {
                 data: {
                     eventId: id,
                     comments: $('#comments').val(),
-                    driverName: name,
                     capacity: $('#capacity').val(),
                     departureTime: startTime_d,
                     returnTime: endTime_d
@@ -98,7 +97,7 @@ function zeroPad(num, places) {
                 }
             });
         }
-function submit_createEvent(user) {
+function submit_createEvent() {
     startTime_d = zeroPad(startTime.getFullYear(), 4) + "-" + zeroPad(startTime.getMonth() + 1, 2)
     + "-" + zeroPad(startTime.getDate(), 2) + " " + zeroPad(startTime.getHours(), 2) + ":"
     + zeroPad(startTime.getMinutes(), 2);
@@ -114,7 +113,6 @@ console.log(startTime_d + " " + endTime_d);
         data: {
             startTime: startTime_d,
             endTime: endTime_d,
-            driver: user,
             name: $('#name').val(),
             description: $('#description').val(),
         },
