@@ -13,7 +13,9 @@
         <h3>End: {{event['endTime']}}</h3>
         <h3>Hosted By: {{event['host']}}</h3>
         <p>{{event['description']}}</p>
+        <div class="attendee-images">
         {% for person in event['attendees'] %}<img src="https://profiles.csh.rit.edu/image/{{person}}" width="50" height="50"/>{% endfor %}
+        </div>
         <a type="button" href="/edit/event/{{event['id']}}" class="btn btn-lg
 btn-success">View Rideboard</a>
       </div>
