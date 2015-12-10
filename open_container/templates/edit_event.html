@@ -5,6 +5,8 @@
 <h2>{{event_name}}</h2>
 <h3>Hosted By: {{host}}</h3>
 <p>{{description}}</p>
+<p>Start Time: {{start_time}}</p>
+<p>End Time: {{end_time}}</p>
       </div>
 {% set inRides = [] %}
 {% set driverId = rides|selectattr('driver', 'equalto', user)|list|length %}

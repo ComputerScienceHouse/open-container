@@ -100,12 +100,18 @@ def http_edit_event(id):
             }),
             400)
 
+    event_time = get_event_time(db_conn, id)
+    start_time = event_time[0]
+    end_time  = event_time[1]
+
     return render_template('edit_event.html',
             user = user_name,
             event = id,
             host = host,
             description = description,
             event_name = event_name,
+            start_time = start_time,
+            end_time = end_time,
             rides = rides)
 
 @app.route('/')
