@@ -30,6 +30,8 @@ id='capacity' min="2" max="42" value="5">
         <button type="button" onclick="submit_createRide({{event}});" class="btn btn-lg
 btn-success">Create Ride</button>
       </p>
+{{start_time}}
+{{end_time}}
 {% endblock %}
 {% block endscripts %}
       <script>
@@ -37,6 +39,10 @@ btn-success">Create Ride</button>
             inline:true,
             format: 'Y-m-d H:M',
             allowTimes: times,
+            minDate: '0',
+            maxDate: '{{end_time}}'.split(' ')[0],
+            maxTime: '{{end_time}}'.split(' ')[1],
+            startDate: '{{start_time}}'.split(' ')[0],
             onChangeDateTime: function(a, b) { startTime = a},
             onGenerate: function(a, b) { startTime = a}
         });
@@ -44,6 +50,9 @@ btn-success">Create Ride</button>
             inline:true,
             format: 'Y-m-d H:M',
             allowTimes: times,
+            minDate: '{{start_time}}'.split(' ')[0],
+            minTime: '{{start_time}}'.split(' ')[1],
+            startDate: '{{end_time}}'.split(' ')[0],
             onChangeDateTime: function(a, b) { endTime = a},
             onGenerate: function(a, b) { endTime = a}
         });

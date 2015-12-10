@@ -36,6 +36,7 @@
             inline:true,
             format: 'Y-m-d H:M',
             allowTimes: times,
+            minDate: '0',
             onChangeDateTime: function(a, b) { startTime = a},
             onGenerate: function(a, b) { startTime = a}
         });
@@ -43,6 +44,7 @@
             inline:true,
             format: 'Y-m-d H:M',
             allowTimes: times,
+            minDate: '0',
             onChangeDateTime: function(a, b) { endTime = a},
             onGenerate: function(a, b) { endTime = a}
         });

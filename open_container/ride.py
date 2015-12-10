@@ -126,8 +126,14 @@ def http_create_ride(id):
             }),
             400)
 
+    event_time = get_event_time(db_conn, id)
+    start_time = event_time[0]
+    end_time  = event_time[1]
+
     return render_template('create_ride.html',
             user = user_name,
+            start_time = start_time,
+            end_time = end_time,
             event = id)
 
 @app.route('/api/v1/create/event', methods=['POST'])
@@ -603,6 +609,14 @@ def get_passenger_name(conn, passengerId):
     for name in c:
         return name[0]
     return ""
+
+def get_event_time(conn, eventId):
+    c = conn.cursor()
+    query_2(c, 'select startTime, endTime from eventList where rowid=%d' % eventId)
+
+    for event in c:
+        return event
+    return None
 
 def main():
     global db_conn
