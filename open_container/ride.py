@@ -17,7 +17,7 @@ class CarFullError(Exception):
 class EventExistenceError(Exception):
     pass
 
-def connect_db():    
+def connect_db():
     return mdb.connect(**json_config['mysql'])
 
 def query_2(cursor, sql):
@@ -382,7 +382,8 @@ def datetime_to_timestr(date_time):
 
 def create_database():
     db_conn = connect_db()
-
+    print(db_conn)
+    print(json_config)
     # tables
     print("creating database")
     c = db_conn.cursor()
