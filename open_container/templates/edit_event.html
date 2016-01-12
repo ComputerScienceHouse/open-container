@@ -1,86 +1,54 @@
 {% extends 'base.html' %}
-{% block title %}Edit Rideboard{% endblock %}
+{% block title %}Edit Event{% endblock %}
+{% block titlebar %}
+<h1>Edit Event</h1>
+{% endblock %}
 {% block body %}
       <div class="jumbotron">
-<h2>{{event_name}}</h2>
-<h3>Hosted By: {{host}}</h3>
-<p>{{description}}</p>
-<p>Start Time: {{start_time}}</p>
-<p>End Time: {{end_time}}</p>
+      <div class="row">
+        <div class="col-md-8">
+            <label for="name">Event Name:</label>
+            <input type="text" class="form-control" id='name' value='{{event_name}}'>
+        </div>
+        <div class="col-md-4">
+          <label for="startTime">Start Time:</label>
+          <input type="text" id="startTime"/>
+        </div>
       </div>
-{% set inRides = [] %}
-{% set driverId = rides|selectattr('driver', 'equalto', user)|list|length %}
-{% for ride in rides %}
-    {% if driverId == 0 %}
-        {% if ride['passengers']|selectattr('name', 'equalto', user)|list|length > 0 %}
-            {% do inRides.append(ride['id']) %}
-        {% endif %}
-    {% else %}
-        {% do inRides.append(driverId) %}
-    {% endif %}
-{% endfor %}
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Driver Name</th>
-                <th>Seats Taken</th>
-                <th>Departure Time</th>
-                <th>Return Time</th>
-                <th>Current Passengers</th>
-                <th>Comments</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-            {% for ride in rides %}
-              <tr>
-                <td>{{ride['driver']}}</td>
-                {% if ride['capacity'] == 2 ** 16 %}
-                <td>&infin;</td>
-                {% else %}
-                <td>{{ride['passengers']|length}}/{{ride['capacity']}}</td>
-                {% endif %}
-                <td>{{ride['departureTime']}}</td>
-                <td>{{ride['returnTime']}}</td>
-                <td>{{ride['passengers']|join(', ', attribute='name')}}</td>
-                <td>{{ride['comments']}}</td>
-                {% if ride['passengers']|selectattr('name', 'equalto', user)|list|length > 0 %}
-                {% set passengerId = (ride['passengers']|selectattr('name', 'equalto', user)|list|first).id %}
-                <td><button type="button" onclick="leaveRide({{passengerId}});"
-class="btn btn-xs btn-danger">Leave Ride</button></td>
-                {% else %}
-                    {% if ride['driver'] == user %}
-                        <td><button type="button" onclick="deleteRide({{ride['id']}}, {{event}})", class="btn btn-xs btn-danger">Delete Ride</button>
-                    {% elif driverId != 0 or inRides|length > 0 and ride['id'] not in inRides%}
-                        <td><span class="label label-danger">Can Only Join One Ride At Once</span>
-                    {% else %}
-                        {% if ride['passengers']|length >= ride['capacity'] %}
-                            <td><span class="label label-danger">Ride Full</span>
-                        {% else %}
-                            <td>
-                            <button type="button" onclick="joinRide({{ride['id']}});" class="btn btn-xs btn-success">Join Ride</button>
-                        {% endif %}
-                    {% endif %}
-                {% endif %}
-              </tr>
-            {% endfor %}
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                {% if inRides|length == 0 %}
-                    <a href="/create/ride/{{event}}" class="btn btn-success">Create Ride</a>
-                {% endif %}
-                {% if user == host %}
-                <button type='button' onclick="removeEvent({{event}});" class="btn btn-danger">Delete Rideboard</button>
-                {% endif %}
-                </td>
-            </tr>
-            </tbody>
-          </table>
-
+      <div class="row">
+        <div class="col-md-8">
+            <label for="description">Event Description:</label>
+            <textarea class="form-control" rows="5" id="description">{{event_description}}</textarea>
+        </div>
+        <div class="col-md-4">
+          <label for="endTime">End Time:</label>
+          <input type="text" id="endTime"/>
+        </div>
+      </div>
+      <p>
+        <button type="button" onclick="submit_editEvent({{event_id}});" class="btn btn-lg btn-success">Edit Rideboard</button>
+      </p>
+      </div>
+{% endblock %}
+{% block endscripts %}
+      <script>
+        $('#startTime').datetimepicker({
+            inline:true,
+            format: 'Y-m-d H:M',
+            value: '{{event_startTime}}',
+            allowTimes: times,
+            minDate: '0',
+            onChangeDateTime: function(a, b) { startTime = a},
+            onGenerate: function(a, b) { startTime = a}
+        });
+        $('#endTime').datetimepicker({
+            inline:true,
+            format: 'Y-m-d H:M',
+            value: '{{event_endTime}}',
+            allowTimes: times,
+            minDate: '0',
+            onChangeDateTime: function(a, b) { endTime = a},
+            onGenerate: function(a, b) { endTime = a}
+        });
+      </script>
 {% endblock %}

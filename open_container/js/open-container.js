@@ -51,7 +51,7 @@ function zeroPad(num, places) {
                 },
                 success: function(msg) {
                     console.log(msg);
-                     location = "/edit/event/" + eventId;
+                     location = "/view/event/" + eventId;
                 }
             });
         }
@@ -93,7 +93,7 @@ function zeroPad(num, places) {
                 },
                 success: function(msg) {
                     console.log(msg);
-                     location = "/edit/event/" + id;
+                     location = "/view/event/" + id;
                 }
             });
         }
@@ -121,7 +121,36 @@ console.log(startTime_d + " " + endTime_d);
         },
         success: function(msg) {
             console.log(msg);
-            location = "/edit/event/" + msg.id
+            location = "/view/event/" + msg.id
+        }
+    });
+}
+function submit_editEvent(event_id) {
+    startTime_d = zeroPad(startTime.getFullYear(), 4) + "-" + zeroPad(startTime.getMonth() + 1, 2)
+    + "-" + zeroPad(startTime.getDate(), 2) + " " + zeroPad(startTime.getHours(), 2) + ":"
+    + zeroPad(startTime.getMinutes(), 2);
+
+    endTime_d = zeroPad(endTime.getFullYear(), 4) + "-" + zeroPad(endTime.getMonth() + 1, 2)
+    + "-" + zeroPad(endTime.getDate(), 2) + " " + zeroPad(endTime.getHours(), 2) + ":"
+    + zeroPad(endTime.getMinutes(), 2);
+
+console.log(startTime_d + " " + endTime_d);
+    $.ajax({
+        url: "/api/v1/edit/event",
+        type: 'POST',
+        data: {
+            startTime: startTime_d,
+            endTime: endTime_d,
+            name: $('#name').val(),
+            description: $('#description').val(),
+            event: event_id
+        },
+        error: function(msg) {
+            console.log(msg);
+        },
+        success: function(msg) {
+            console.log(msg);
+            location = "/view/event/" + event_id
         }
     });
 }
