@@ -137,7 +137,11 @@ def http_create_ride(id):
             end_time = end_time,
             event = id)
 
-@app.route('/api/v1/create/event', methods=['POST'])
+@app.route('/api/v1/<path:path>', methods=['POST'])
+def api_deprecated():
+    return make_response("API v1 is deprecated", 400)
+
+@app.route('/api/v2/create/event', methods=['POST'])
 def api_create_event():
  
     try:
@@ -168,7 +172,7 @@ def api_create_event():
 
     return jsonify({"id":event_id})
 
-@app.route('/api/v1/create/ride', methods=['POST'])
+@app.route('/api/v2/create/ride', methods=['POST'])
 def api_create_ride():
 
     error = None
@@ -223,7 +227,7 @@ ride_startTime, ride_endTime)
 
     return jsonify({"rideId": ride_data})
 
-@app.route('/api/v1/create/passenger', methods=['POST'])
+@app.route('/api/v2/create/passenger', methods=['POST'])
 def api_create_passenger():
 
     error = None
@@ -251,7 +255,7 @@ def api_create_passenger():
             400)
     return jsonify({"id": passenger_data})
 
-@app.route('/api/v1/edit/event', methods=['POST'])
+@app.route('/api/v2/edit/event', methods=['POST'])
 def api_edit_event():
 
     try:
@@ -302,12 +306,12 @@ def api_edit_event():
 
     return make_response(str(event_id), 200)
 
-@app.route('/api/v1/list/events', methods=['POST'])
+@app.route('/api/v2/list/events', methods=['POST'])
 def api_list_events():
 
     return jsonify({"events": list_events(db_conn)})
 
-@app.route('/api/v1/list/rides', methods=['POST'])
+@app.route('/api/v2/list/rides', methods=['POST'])
 def api_list_rides():
 
     try:
@@ -330,7 +334,7 @@ def api_list_rides():
             }),
             400)
 
-@app.route('/api/v1/remove/event', methods=['POST'])
+@app.route('/api/v2/remove/event', methods=['POST'])
 def api_remove_event():
 
     try:
@@ -359,7 +363,7 @@ def api_remove_event():
 
     return ""
 
-@app.route('/api/v1/remove/ride', methods=['POST'])
+@app.route('/api/v2/remove/ride', methods=['POST'])
 def api_remove_ride():
 
     try:
@@ -388,7 +392,7 @@ def api_remove_ride():
 
     return ""
 
-@app.route('/api/v1/remove/passenger', methods=['POST'])
+@app.route('/api/v2/remove/passenger', methods=['POST'])
 def api_remove_passenger():
 
     try:

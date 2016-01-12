@@ -15,7 +15,7 @@ function zeroPad(num, places) {
 
         function joinRide(id) {
             $.ajax({
-                url: "/api/v1/create/passenger",
+                url: "/api/v2/create/passenger",
                 type: "POST",
                 data: { carId: id},
                 error: function(msg) {
@@ -29,7 +29,7 @@ function zeroPad(num, places) {
         }
         function leaveRide(id) {
             $.ajax({
-                url: "/api/v1/remove/passenger",
+                url: "/api/v2/remove/passenger",
                 type: "POST",
                 data: { id: id },
                 error: function(msg) {
@@ -43,7 +43,7 @@ function zeroPad(num, places) {
         }
         function deleteRide(id, eventId) {
             $.ajax({
-                url: "/api/v1/remove/ride",
+                url: "/api/v2/remove/ride",
                 type: "POST",
                 data: { id: id },
                 error: function(msg) {
@@ -57,7 +57,7 @@ function zeroPad(num, places) {
         }
         function removeEvent(id) {
             $.ajax({
-                url: "/api/v1/remove/event",
+                url: "/api/v2/remove/event",
                 type: "POST",
                 data: { eventId: id },
                 error: function(msg) {
@@ -79,7 +79,7 @@ function zeroPad(num, places) {
         + zeroPad(endTime.getMinutes(), 2);
 
             $.ajax({
-                url: "/api/v1/create/ride",
+                url: "/api/v2/create/ride",
                 type: "POST",
                 data: {
                     eventId: id,
@@ -108,7 +108,7 @@ function submit_createEvent() {
 
 console.log(startTime_d + " " + endTime_d);
     $.ajax({
-        url: "/api/v1/create/event",
+        url: "/api/v2/create/event",
         type: 'POST',
         data: {
             startTime: startTime_d,
@@ -136,7 +136,7 @@ function submit_editEvent(event_id) {
 
 console.log(startTime_d + " " + endTime_d);
     $.ajax({
-        url: "/api/v1/edit/event",
+        url: "/api/v2/edit/event",
         type: 'POST',
         data: {
             startTime: startTime_d,
