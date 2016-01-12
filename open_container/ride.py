@@ -381,9 +381,8 @@ def datetime_to_timestr(date_time):
     return date_time.strftime("%Y-%m-%d %H:%M")
 
 def create_database():
+    global db_conn
     db_conn = connect_db()
-    print(db_conn)
-    print(json_config)
     # tables
     print("creating database")
     c = db_conn.cursor()
