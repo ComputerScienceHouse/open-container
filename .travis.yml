@@ -1,4 +1,9 @@
 language: python
+services:
+    - mysql
 install: pip install tox MySQL-python
+before_script:
+    - mysql -e 'create database oc;'
+    - open-container-create-db
 script: true
 sudo: false

@@ -1,0 +1,10 @@
+{
+    "debug": false,
+    "port": 64957,
+    "mysql": {
+        "host": "localhost",
+        "user": "travis",
+        "passwd": "",
+        "db": "oc"
+    }
+}
