@@ -4,6 +4,7 @@ services:
 install: pip install tox MySQL-python
 before_script:
     - mysql -e 'create database oc;'
-    - open-container-create-db
-script: true
+script:
+    - python setup.py install
+    - open-container-create-db .travis/config.json
 sudo: false
