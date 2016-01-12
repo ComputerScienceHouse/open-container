@@ -73,19 +73,24 @@ def http_create_event():
     return render_template('create_event.html',
             user = user_name)
 
-@app.route('/edit/event/<id>')
+@app.route('/edit/event/<int:id>')
 def http_edit_event(id):
     user_name = request.headers.get('X-WEBAUTH-USER')
+    event = get_event(db_conn, id)
+    event_time = get_event_time(db_conn, id)
 
-    try:
-        id = int(id)
-    except ValueError:
-        return make_response(jsonify(
-            {
-                "code": 4,
-                "error": "input not an integer!"
-            }),
-            400)
+    return render_template('edit_event.html',
+            user = user_name,
+            event_id = id,
+            event_name = event[4],
+            event_description = event[5],
+            event_startTime = event_time[0],
+            event_endTime = event_time[1])
+    
+@app.route('/view/event/<int:id>')
+def http_view_event(id):
+    user_name = request.headers.get('X-WEBAUTH-USER')
+
     try:
         rides = list_rides(db_conn, id)
         ride = get_event(db_conn, id)
@@ -104,7 +109,7 @@ def http_edit_event(id):
     start_time = event_time[0]
     end_time  = event_time[1]
 
-    return render_template('edit_event.html',
+    return render_template('view_event.html',
             user = user_name,
             event = id,
             host = host,
@@ -118,19 +123,9 @@ def http_edit_event(id):
 def http_base():
     return http_list_event()
 
-@app.route('/create/ride/<id>')
+@app.route('/create/ride/<int:id>')
 def http_create_ride(id):
     user_name = request.headers.get('X-WEBAUTH-USER')
-
-    try:
-        id = int(id)
-    except ValueError:
-        return make_response(jsonify(
-            {
-                "code": 4,
-                "error": "input not an integer!"
-            }),
-            400)
 
     event_time = get_event_time(db_conn, id)
     start_time = event_time[0]
@@ -254,8 +249,58 @@ def api_create_passenger():
                 "error": "car is already full!"
             }),
             400)
-
     return jsonify({"id": passenger_data})
+
+@app.route('/api/v1/edit/event', methods=['POST'])
+def api_edit_event():
+
+    try:
+        event_id = int(request.form['event'])
+    except ValueError:
+        return make_response(jsonify(
+            {
+                "code": 4,
+                "error": "event must be an integer value!"
+            }),
+            400)
+
+    try:
+        event_startTime = request.form['startTime']
+        event_endTime = request.form['endTime']
+    except ValueError:
+        return make_response(jsonify(
+            {
+                "code": 2,
+                "error": "invalid time format!"
+            }),
+            400)
+
+    name = request.form['name']
+    if name == "":
+        return make_response(jsonify(
+            {
+                "code": 3,
+                "error": "empty string not accepted for name!"
+            }),
+            400)
+
+    description = request.form['description']
+    user_name = request.headers.get('X-WEBAUTH-USER')
+
+    host_name = get_host_name(db_conn, event_id)
+
+    if user_name != host_name:
+        return make_response(jsonify(
+            {
+                "code": 5,
+                "error": "you are not that host!"
+            }),
+            400)
+
+    edit_event(db_conn, event_id, name, description,
+                event_startTime, event_endTime)
+
+    return make_response(str(event_id), 200)
 
 @app.route('/api/v1/list/events', methods=['POST'])
 def api_list_events():
@@ -391,7 +436,7 @@ def create_database():
 (rowid INT NOT NULL AUTO_INCREMENT PRIMARY KEY, startTime text, endTime text, host text, name text, description text)''')
     query_2(c, '''create table rideList
 (rowid INT NOT NULL AUTO_INCREMENT PRIMARY KEY, eventId integer, capacity integer, comments text, driver text, departureTime text, returnTime text)''')
-    query_2(c, '''create table passengers
+    query_2(c, '''create table passengersList
 (rowid INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name text, carid integer)''')
 
     db_conn.commit()
@@ -450,6 +495,15 @@ def get_event(conn, id):
 def event_exists(conn, id):
     return not get_event(conn, id) is None
 
+def edit_event(conn, id, name, description, start, end):
+    c = conn.cursor()
+    query_3(c, '''update eventList
+SET startTime = %s, endTime = %s, name = %s, description = %s
+WHERE rowid=%s''',
+            (start, end, name, description, id))
+    conn.commit()
+    return id
+
 def remove_event(conn, id):
     c = conn.cursor()
     query_2(c, 'delete from eventList where rowid=%d' % id)
@@ -487,7 +541,7 @@ def list_rides(conn, eventId):
 
     for ride in c:
         d = conn.cursor()
-        query_2(d, 'select name, rowid from passengers where carId=%d' % ride[0])
+        query_2(d, 'select name, rowid from passengersList where carId=%d' % ride[0])
 
         passenger_list = []
 
@@ -522,7 +576,7 @@ def list_attendees(conn, eventId):
 
 def remove_ride(conn, carId):
     c = conn.cursor()
-    query_2(c, 'select rowid from passengers where carId=%d' % carId)
+    query_2(c, 'select rowid from passengersList where carId=%d' % carId)
     for passenger in c:
         remove_passenger(conn, passenger)
     query_2(c, 'delete from rideList where rowid=%d' % carId)
@@ -540,7 +594,7 @@ def ride_has_free_space(conn, carId):
         capacity = results[0]
 
     i = 0
-    query_2(c, 'select * from passengers where carId=%d' % carId)
+    query_2(c, 'select * from passengersList where carId=%d' % carId)
     for row in c:
         i += 1
 
@@ -551,7 +605,7 @@ def ride_has_free_space(conn, carId):
 def ride_is_empty(conn, carId): 
     i = 0
     c = conn.cursor()
-    query_2(c, 'select * from passengers where carId=%d' % carId)
+    query_2(c, 'select * from passengersList where carId=%d' % carId)
     for row in c:
         i += 1
 
@@ -565,8 +619,7 @@ def add_passenger(conn, rideId, name):
         raise CarFullError("Car is full!")
 
     c = conn.cursor()
-    print(name, rideId)
-    query_3(c, '''insert into passengers (name, carid) values (%s, %s)''', (name, rideId))
+    query_3(c, '''insert into passengersList (name, carid) values (%s, %s)''', (name, rideId))
 
     c.close()
 
@@ -576,14 +629,14 @@ def add_passenger(conn, rideId, name):
 def remove_passenger(conn, passengerId):
     rideId = 0
     c = conn.cursor()
-    query_2(c, 'select carId from passengers where rowid=%d' %passengerId)
+    query_2(c, 'select carId from passengersList where rowid=%d' %passengerId)
 
     for car in c:
         rideId = car[0]
 
     print("rideId: ", rideId)
 
-    query_2(c, 'delete from passengers where rowid=%d' % passengerId)
+    query_2(c, 'delete from passengersList where rowid=%d' % passengerId)
     conn.commit()
 
     #if ride_is_empty(conn, rideId):
@@ -610,7 +663,7 @@ def get_driver_name(conn, rideId):
 
 def get_passenger_name(conn, passengerId):
     c = conn.cursor()
-    query_2(c, 'select name from passengers where rowid=%d' % passengerId)
+    query_2(c, 'select name from passengersList where rowid=%d' % passengerId)
 
     for name in c:
         return name[0]
