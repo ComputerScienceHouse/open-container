@@ -5,7 +5,6 @@ install: pip install tox MySQL-python
 before_script:
     - mysql -e 'create database oc;'
 script:
-    - export oc_config="config.json"
     - tox
 #    - python setup.py develop
 #    - python setup.py install
