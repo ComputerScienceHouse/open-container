@@ -6,9 +6,8 @@ from random import shuffle
 import sys
 import json
 
-
 json_config = None
-with open(sys.argv[1]) as data_file:
+with open(os.environ['oc_config']) as data_file:
     json_config = json.load(data_file)
 
 class CarFullError(Exception):
