@@ -77,6 +77,8 @@ class="btn btn-xs btn-danger">Leave Ride</button></td>
                 {% endif %}
                 {% if user == host %}
                 <button type='button' onclick="removeEvent({{event}});" class="btn btn-danger">Delete Rideboard</button>
+                    <a href="/edit/event/{{event}}" class="btn btn-info">Edit
+Event</a>
                 {% endif %}
                 </td>
             </tr>
