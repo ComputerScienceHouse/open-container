@@ -1,7 +1,7 @@
 import os
 import MySQLdb as mdb
 from datetime import datetime, date, timedelta, time
-from flask import Flask, jsonify, make_response, render_template, request, send_from_directory
+from flask import Flask, jsonify, make_response, render_template, request, send_from_directory, redirect
 from random import shuffle
 import sys
 import json
@@ -78,15 +78,17 @@ def http_edit_event(id):
     user_name = request.headers.get('X-WEBAUTH-USER')
     event = get_event(db_conn, id)
     event_time = get_event_time(db_conn, id)
+    if user_name == event[3]:
+        return render_template('edit_event.html',
+                user = user_name,
+                event_id = id,
+                event_name = event[4],
+                event_description = event[5],
+                event_startTime = event_time[0],
+                event_endTime = event_time[1])
+    else:
+        return redirect('/view/event/' + str(id))
 
-    return render_template('edit_event.html',
-            user = user_name,
-            event_id = id,
-            event_name = event[4],
-            event_description = event[5],
-            event_startTime = event_time[0],
-            event_endTime = event_time[1])
-    
 @app.route('/view/event/<int:id>')
 def http_view_event(id):
     user_name = request.headers.get('X-WEBAUTH-USER')
