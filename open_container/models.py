@@ -5,11 +5,11 @@ from open_container import db
 class Event(db.Model):
     __tablename__ = 'eventList'
     id = Column(Integer, primary_key=True)
-    startTime = Column(Text)
-    endTime = Column(Text)
-    host = Column(Text)
-    name = Column(Text)
-    description = Column(Text)
+    startTime = Column(DateTime, nullable=False)
+    endTime = Column(DateTime, nullable=False)
+    host = Column(String(64), nullable=False)
+    name = Column(Text, nullable=False)
+    description = Column(Text, nullable=False)
 
     def __init__(self, startTime, endTime, host, name, description):
         self.startTime = startTime
@@ -22,12 +22,12 @@ class Event(db.Model):
 class Ride(db.Model):
     __tablename__ = 'rideList'
     id = Column(Integer, primary_key=True)
-    eventId = Column(Integer)
-    capacity = Column(Integer)
-    comments = Column(Text)
-    driver = Column(Text)
-    departureTime = Column(Text)
-    returnTime = Column(Text)
+    eventId = Column(ForeignKey('eventList.id'), nullable=False)
+    capacity = Column(Integer, nullable=False)
+    comments = Column(Text, nullable=False)
+    driver = Column(String(64), nullable=False)
+    departureTime = Column(DateTime, nullable=False)
+    returnTime = Column(DateTime, nullable=False)
 
     def __init__(self, eventId, capacity, comments, driver, departureTime, returnTime):
         self.eventId = eventId
@@ -40,8 +40,8 @@ class Ride(db.Model):
 class Passenger(db.Model):
     __tablename__ = 'passengersList'
     id = Column(Integer, primary_key=True)
-    name = Column(Text)
-    carId = Column(Integer)
+    name = Column(String(64), nullable=False)
+    carId = Column(ForeignKey('rideList.id'), nullable=False)
 
     def __init__(self, name, carId):
         self.name = name
