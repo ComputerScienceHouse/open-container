@@ -119,8 +119,8 @@ def http_create_ride(id):
     user_name = request.headers.get('X-WEBAUTH-USER')
 
     event_time = get_event_time(id)
-    start_time = event_time[0]
-    end_time  = event_time[1]
+    start_time = event_time.startTime
+    end_time  = event_time.endTime
 
     return render_template('create_ride.html',
             user = user_name,
